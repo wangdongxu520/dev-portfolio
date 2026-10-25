@@ -266,6 +266,48 @@ a { color: inherit; text-decoration: none; }
 
 .foot { color: var(--muted); font-size: 12px; text-align: center; padding: 6px 0 10px; }
 
+/* 子标题（表格区小标题） */
+.sub { margin: 16px 0 8px; font-size: 14px; color: var(--muted); font-weight: 600; }
+
+/* ---------- Element UI 表格（暗色适配） ---------- */
+.etbl { width: 100%; }
+.etbl .el-table,
+.etbl .el-table__expanded-cell { background: transparent; color: var(--ink); }
+.etbl .el-table th,
+.etbl .el-table tr,
+.etbl .el-table td { background: var(--card); color: var(--ink); border-color: var(--line); }
+.etbl .el-table--striped .el-table__body tr.el-table__row--striped td { background: var(--bg2); }
+.etbl .el-table--enable-row-hover .el-table__body tr:hover > td,
+.etbl .el-table__body tr.hover-row > td { background: #1c2742; }
+.etbl .el-table thead th { background: #1a2540; color: #c7d2f0; font-weight: 600; }
+.etbl .el-table thead th .cell { color: #c7d2f0; }
+.etbl .el-table td, .etbl .el-table th.is-leaf { border-bottom: 1px solid var(--line); }
+.etbl .el-table::before { display: none; }
+.etbl .el-table .row-warn td { background: rgba(248, 113, 113, 0.10) !important; }
+.etbl .el-table .row-warn:hover td { background: rgba(248, 113, 113, 0.18) !important; }
+.etbl .el-table__empty-text { color: var(--muted); }
+.delta-ok { color: var(--green); font-variant-numeric: tabular-nums; }
+.delta-warn { color: var(--red); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* el-tag 暗色基调（覆盖默认亮色） */
+.etbl .el-tag--success { background: rgba(52, 211, 153, 0.16); color: #6ee7b7; border-color: transparent; }
+.etbl .el-tag--danger { background: rgba(248, 113, 113, 0.16); color: #fca5a5; border-color: transparent; }
+.etbl .el-tag--warning { background: rgba(251, 191, 36, 0.16); color: #fcd34d; border-color: transparent; }
+.etbl .el-tag--info { background: rgba(139, 151, 184, 0.16); color: #aeb9d8; border-color: transparent; }
+
+/* 自定义状态/tag 配色 */
+.etbl .el-tag.st-master { background: rgba(59, 130, 246, 0.18); color: #7fb0ff; border-color: transparent; }
+.etbl .el-tag.st-region { background: rgba(34, 211, 238, 0.15); color: #5fe0f0; border-color: transparent; }
+.etbl .el-tag.st-coll { background: rgba(34, 211, 238, 0.16); color: #5fe0f0; border-color: transparent; }
+.etbl .el-tag.st-arch { background: rgba(96, 165, 250, 0.16); color: #93c5fd; border-color: transparent; }
+.etbl .el-tag.st-dl { background: rgba(129, 140, 248, 0.16); color: #a5b4fc; border-color: transparent; }
+.etbl .el-tag.st-unzip { background: rgba(167, 139, 250, 0.16); color: #c4b5fd; border-color: transparent; }
+.etbl .el-tag.st-ing { background: rgba(251, 191, 36, 0.16); color: #fcd34d; border-color: transparent; }
+.etbl .el-tag.st-done { background: rgba(52, 211, 153, 0.18); color: #6ee7b7; border-color: transparent; }
+.etbl .el-tag.st-dlfail { background: rgba(248, 113, 113, 0.18); color: #fca5a5; border-color: transparent; }
+.etbl .el-tag.st-unzfail { background: rgba(251, 113, 133, 0.18); color: #fda4af; border-color: transparent; }
+.etbl .el-tag.st-infail { background: rgba(239, 68, 68, 0.20); color: #fca5a5; border-color: transparent; }
+
 /* 响应式 */
 @media (max-width: 900px) {
   .kpis { grid-template-columns: repeat(2, 1fr); }

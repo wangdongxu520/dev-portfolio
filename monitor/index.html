@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>数据监控平台 · 演示</title>
   <meta name="description" content="数据监控平台 · 纯前端演示版（自学探索，Django + Bootstrap 原型的重构版）——全国地图数据监控 / 打卡可视化 / 停车场数据自动入库。" />
+  <link rel="stylesheet" href="../vendor/element-ui.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -45,31 +46,37 @@
     </section>
 
     <!-- 模块一：全国地图数据监控 -->
-    <section class="panel panel--map">
+    <section class="panel">
       <div class="panel__head">
         <h2>全国地图数据监控</h2>
         <span class="panel__tag">实时核对</span>
       </div>
       <p class="panel__cap">监控全国<b>大区库</b>与<b>母库</b>在运维执行<b>前后</b>的数量变化，偏差超阈值即触发风险预警，防止运维执行出错。</p>
-      <div class="map">
-        <svg class="map__svg" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet" aria-label="大区库-母库拓扑示意">
-          <defs>
-            <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.35" />
-              <stop offset="100%" stop-color="#22d3ee" stop-opacity="0" />
-            </radialGradient>
-          </defs>
-          <g class="map__links" id="mapLinks"></g>
-          <g class="map__nodes" id="mapNodes"></g>
-        </svg>
-        <div class="map__legend">● 正常 &nbsp; ● 风险预警 &nbsp; ● 母库</div>
+      <div id="mapApp" class="etbl">
+        <el-table :data="rows" stripe size="small" style="width:100%" :row-class-name="rowClass">
+          <el-table-column prop="name" label="库节点" width="150"></el-table-column>
+          <el-table-column prop="type" label="类型" width="100" align="center">
+            <template slot-scope="s"><el-tag size="mini" :class="s.row.type==='母库'?'st-master':'st-region'">{{s.row.type}}</el-tag></template>
+          </el-table-column>
+          <el-table-column prop="before" label="执行前(万)" align="right"></el-table-column>
+          <el-table-column prop="after" label="执行后(万)" align="right"></el-table-column>
+          <el-table-column label="偏差(Δ%)" width="120" align="right">
+            <template slot-scope="s"><span :class="s.row.warn?'delta-warn':'delta-ok'">{{s.row.delta>=0?'+':''}}{{s.row.delta}}%</span></template>
+          </el-table-column>
+          <el-table-column label="状态" width="110" align="center">
+            <template slot-scope="s"><el-tag size="mini" :type="s.row.warn?'danger':'success'">{{s.row.warn?'风险预警':'正常'}}</el-tag></template>
+          </el-table-column>
+        </el-table>
+        <h3 class="sub">执行监控事件</h3>
+        <el-table :data="events" size="small" style="width:100%">
+          <el-table-column prop="time" label="时间" width="90"></el-table-column>
+          <el-table-column prop="node" label="库节点" width="120"></el-table-column>
+          <el-table-column prop="text" label="事件" show-overflow-tooltip></el-table-column>
+          <el-table-column label="级别" width="90" align="center">
+            <template slot-scope="s"><el-tag size="mini" :type="s.row.level==='预警'?'warning':'info'">{{s.row.level}}</el-tag></template>
+          </el-table-column>
+        </el-table>
       </div>
-      <aside class="map__side">
-        <h3>大区库核对（执行前后）</h3>
-        <ul class="region" id="regionList"></ul>
-        <h3>执行监控事件</h3>
-        <ul class="feed" id="eventFeed"></ul>
-      </aside>
     </section>
 
     <!-- 模块二：工程表执行打卡可视化 -->
@@ -93,6 +100,17 @@
           <canvas id="chartDonut"></canvas>
         </div>
       </div>
+      <h3 class="sub">工程表执行打卡实例</h3>
+      <div id="clockApp" class="etbl">
+        <el-table :data="rows" stripe size="small" style="width:100%">
+          <el-table-column prop="time" label="时间段" width="150"></el-table-column>
+          <el-table-column prop="who" label="执行人" width="110" align="center"></el-table-column>
+          <el-table-column prop="task" label="执行内容"></el-table-column>
+          <el-table-column label="状态" width="110" align="center">
+            <template slot-scope="s"><el-tag size="mini" type="success">{{s.row.status}}</el-tag></template>
+          </el-table-column>
+        </el-table>
+      </div>
     </section>
 
     <!-- 模块三：停车场数据自动入库 -->
@@ -101,26 +119,19 @@
         <h2>停车场数据自动入库</h2>
         <span class="panel__tag">流式处理</span>
       </div>
-      <div class="pipeline" id="pipeline">
-        <div class="stage" data-stage="0"><span class="stage__no">1</span>数据源采集</div>
-        <span class="stage__arrow">→</span>
-        <div class="stage" data-stage="1"><span class="stage__no">2</span>数据解析</div>
-        <span class="stage__arrow">→</span>
-        <div class="stage" data-stage="2"><span class="stage__no">3</span>规则校验</div>
-        <span class="stage__arrow">→</span>
-        <div class="stage" data-stage="3"><span class="stage__no">4</span>自动入库</div>
+      <div class="ingest__head">
+        <span>停车场数据自动入库流水</span>
+        <span class="ingest__count">今日已入库 <b id="ingestCount">0</b> 条</span>
       </div>
-      <div class="ingest">
-        <div class="ingest__head">
-          <span>实时入库流水</span>
-          <span class="ingest__count">今日已入库 <b id="ingestCount">0</b> 条</span>
-        </div>
-        <div class="ingest__table">
-          <div class="row row--head">
-            <span>车牌</span><span>停车场</span><span>入场时间</span><span>状态</span>
-          </div>
-          <div id="ingestRows"></div>
-        </div>
+      <div id="parkApp" class="etbl">
+        <el-table :data="rows" stripe size="small" style="width:100%">
+          <el-table-column prop="plate" label="车牌" width="130"></el-table-column>
+          <el-table-column prop="park" label="停车场" width="150"></el-table-column>
+          <el-table-column prop="time" label="入场时间" width="110" align="center"></el-table-column>
+          <el-table-column label="入库状态">
+            <template slot-scope="s"><el-tag size="mini" :class="statusClass(s.row.status)">{{s.row.status}}</el-tag></template>
+          </el-table-column>
+        </el-table>
       </div>
     </section>
 
@@ -130,6 +141,9 @@
   </main>
 
   <script src="vendor/chart.umd.min.js"></script>
+  <script src="../vendor/vue.min.js"></script>
+  <script src="../vendor/element-ui.js"></script>
+  <script src="tables.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
