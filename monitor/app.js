@@ -116,11 +116,11 @@
     new Chart(barCtx, {
       type: "bar",
       data: {
-        labels: ["京津冀", "长三角", "珠三角", "成渝", "其他"],
+        labels: ["月基线切板", "数据库初始化", "日常Bug", "Tomcat部署", "ZooKeeper", "Eureka配置", "停车场入库"],
         datasets: [{
-          label: "打卡人数",
-          data: [320, 410, 380, 210, 150],
-          backgroundColor: ["#3b82f6", "#22d3ee", "#34d399", "#fbbf24", "#8b97b8"]
+          label: "执行打卡人次",
+          data: [42, 38, 65, 30, 28, 22, 17],
+          backgroundColor: ["#3b82f6", "#22d3ee", "#34d399", "#fbbf24", "#a78bfa", "#f472b6", "#8b97b8"]
         }]
       },
       options: {
@@ -136,8 +136,8 @@
       data: {
         labels: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
         datasets: [{
-          label: "打卡(百人)",
-          data: [28, 31, 29, 34, 33, 37, 35],
+          label: "执行打卡(人次)",
+          data: [58, 63, 60, 71, 68, 75, 72],
           borderColor: "#22d3ee",
           backgroundColor: "rgba(34,211,238,0.12)",
           fill: true, tension: 0.35, pointBackgroundColor: "#22d3ee"
@@ -154,10 +154,10 @@
     new Chart(donutCtx, {
       type: "doughnut",
       data: {
-        labels: ["正常", "迟到", "缺卡"],
+        labels: ["已打卡执行", "执行中", "待打卡"],
         datasets: [{
-          data: [82, 12, 6],
-          backgroundColor: ["#34d399", "#fbbf24", "#f87171"],
+          data: [78, 15, 7],
+          backgroundColor: ["#34d399", "#22d3ee", "#fbbf24"],
           borderColor: "#141d33", borderWidth: 2
         }]
       },
