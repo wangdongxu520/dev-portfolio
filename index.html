@@ -24,7 +24,7 @@
         <el-tab-pane label="数据运维" name="data">
           <div class="panel">
             <h2 class="panel__title">数据运维</h2>
-            <p class="panel__lead">数据运维两条主线：① 基础数据地图业务 ② 自动驾驶业务，覆盖 SQL 初始化、Tomcat / ZooKeeper 包部署与 Eureka 注册中心运维。</p>
+            <p class="panel__lead">数据运维三条主线：① 基础数据地图业务 ② 自动驾驶业务 ③ 任务排期工具，覆盖 SQL 初始化、Tomcat / ZooKeeper 包部署、Eureka 注册中心运维与 Web 任务排期。</p>
             <div class="flow">
               <section class="lane">
                 <h3 class="lane__head"><span class="lane__dot"></span>主线一 · 基础数据地图业务</h3>
@@ -53,6 +53,13 @@
                   <div class="node">验证服务监控</div>
                   <span class="arrow">→</span>
                   <div class="node node--end">如遇到 bug（看日志、重启、回滚等）</div>
+                </div>
+              </section>
+
+              <section class="lane">
+                <h3 class="lane__head"><span class="lane__dot"></span>主线三 · 任务排期工具</h3>
+                <div class="lane__track">
+                  <div class="node node--solo">web 页面</div>
                 </div>
               </section>
             </div>
