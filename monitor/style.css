@@ -308,7 +308,55 @@ a { color: inherit; text-decoration: none; }
 .etbl .el-tag.st-unzfail { background: rgba(251, 113, 133, 0.18); color: #fda4af; border-color: transparent; }
 .etbl .el-tag.st-infail { background: rgba(239, 68, 68, 0.20); color: #fca5a5; border-color: transparent; }
 
+/* ---------- 左栏导航 + 右侧内容布局 ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+.side {
+  background: linear-gradient(160deg, var(--card2), var(--card));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  position: sticky;
+  top: 80px;
+}
+.side__title {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: .14em;
+  padding: 4px 12px 10px;
+  text-transform: uppercase;
+}
+.side__menu { border-right: none !important; background: transparent !important; }
+.side__menu .el-menu-item {
+  color: var(--muted);
+  border-radius: 9px;
+  margin-bottom: 4px;
+  height: 42px; line-height: 42px;
+}
+.side__menu .el-menu-item:hover { background: rgba(34, 211, 238, 0.08); color: var(--ink); }
+.side__menu .el-menu-item.is-active {
+  background: rgba(34, 211, 238, 0.14);
+  color: var(--cyan);
+}
+.side__menu .el-menu-item i { color: inherit; }
+.content { min-width: 0; }
+
+/* 导入工具栏 */
+.tb { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.tb__hint { color: var(--muted); font-size: 12px; }
+.up { margin-top: 10px; }
+.up input[type="file"] { color: var(--muted); font-size: 13px; }
+
 /* 响应式 */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .side { position: static; }
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 900px) {
   .kpis { grid-template-columns: repeat(2, 1fr); }
   .panel--map { grid-template-columns: 1fr; }

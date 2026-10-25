@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>数据监控平台 · 演示</title>
-  <meta name="description" content="数据监控平台 · 纯前端演示版（自学探索，Django + Bootstrap 原型的重构版）——全国地图数据监控 / 打卡可视化 / 停车场数据自动入库。" />
+  <meta name="description" content="数据监控平台 · 纯前端演示版（自学探索，Django + Bootstrap 原型的重构版）——全国地图数据监控 / 工程表执行打卡 / 停车场数据自动入库。" />
   <link rel="stylesheet" href="../vendor/element-ui.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -45,72 +45,96 @@
       </div>
     </section>
 
-    <!-- 模块一：全国地图数据监控 -->
-    <section class="panel">
-      <div class="panel__head">
-        <h2>全国地图数据监控</h2>
-        <span class="panel__tag">实时核对</span>
-      </div>
-      <p class="panel__cap">监控全国<b>大区库</b>与<b>母库</b>在运维执行<b>前后</b>的数量变化，偏差超阈值即触发风险预警，防止运维执行出错。</p>
-      <div id="mapApp" class="etbl">
-        <el-table :data="rows" stripe size="small" style="width:100%" :row-class-name="rowClass">
-          <el-table-column prop="name" label="库节点" width="150"></el-table-column>
-          <el-table-column prop="type" label="类型" width="100" align="center">
-            <template slot-scope="s"><el-tag size="mini" :class="s.row.type==='母库'?'st-master':'st-region'">{{s.row.type}}</el-tag></template>
-          </el-table-column>
-          <el-table-column prop="before" label="执行前(万)" align="right"></el-table-column>
-          <el-table-column prop="after" label="执行后(万)" align="right"></el-table-column>
-          <el-table-column label="偏差(Δ%)" width="120" align="right">
-            <template slot-scope="s"><span :class="s.row.warn?'delta-warn':'delta-ok'">{{s.row.delta>=0?'+':''}}{{s.row.delta}}%</span></template>
-          </el-table-column>
-          <el-table-column label="状态" width="110" align="center">
-            <template slot-scope="s"><el-tag size="mini" :type="s.row.warn?'danger':'success'">{{s.row.warn?'风险预警':'正常'}}</el-tag></template>
-          </el-table-column>
-        </el-table>
-      </div>
-    </section>
+    <!-- 左栏导航 + 右侧内容 -->
+    <div id="app" class="layout">
+      <aside class="side">
+        <div class="side__title">数据监控</div>
+        <el-menu :default-active="active" @select="onSelect" class="side__menu">
+          <el-menu-item index="map"><i class="el-icon-location"></i><span slot="title">全国地图数据监控</span></el-menu-item>
+          <el-menu-item index="clock"><i class="el-icon-date"></i><span slot="title">工程表执行打卡可视化</span></el-menu-item>
+          <el-menu-item index="park"><i class="el-icon-truck"></i><span slot="title">停车场数据自动入库</span></el-menu-item>
+        </el-menu>
+      </aside>
 
-    <!-- 模块二：工程表执行打卡可视化 -->
-    <section class="panel">
-      <div class="panel__head">
-        <h2>工程表执行打卡可视化</h2>
-        <span class="panel__tag">运维执行</span>
-      </div>
-      <p class="panel__cap">运维人员执行<b>运维组长下发的工程表</b>时进行打卡登记，监控各工程表的执行进度与到岗情况。</p>
-      <h3 class="sub">工程表执行打卡实例</h3>
-      <div id="clockApp" class="etbl">
-        <el-table :data="rows" stripe size="small" style="width:100%">
-          <el-table-column prop="time" label="时间段" width="150"></el-table-column>
-          <el-table-column prop="who" label="执行人" width="110" align="center"></el-table-column>
-          <el-table-column prop="task" label="执行内容"></el-table-column>
-          <el-table-column label="状态" width="110" align="center">
-            <template slot-scope="s"><el-tag size="mini" type="success">{{s.row.status}}</el-tag></template>
-          </el-table-column>
-        </el-table>
-      </div>
-    </section>
+      <div class="content">
+        <!-- 视图一：全国地图数据监控 -->
+        <section v-show="active==='map'" class="panel">
+          <div class="panel__head">
+            <h2>全国地图数据监控</h2>
+            <span class="panel__tag">实时核对</span>
+          </div>
+          <p class="panel__cap">监控全国<b>大区库</b>与<b>母库</b>在运维执行<b>前后</b>的数量变化，偏差超阈值即触发风险预警，防止运维执行出错。</p>
+          <el-table :data="mapRows" stripe size="small" style="width:100%" :row-class-name="rowClass">
+            <el-table-column prop="name" label="库节点" width="150"></el-table-column>
+            <el-table-column prop="type" label="类型" width="100" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="s.row.type==='母库'?'st-master':'st-region'">{{s.row.type}}</el-tag></template>
+            </el-table-column>
+            <el-table-column prop="before" label="执行前(万)" align="right"></el-table-column>
+            <el-table-column prop="after" label="执行后(万)" align="right"></el-table-column>
+            <el-table-column label="偏差(Δ%)" width="120" align="right">
+              <template slot-scope="s"><span :class="s.row.warn?'delta-warn':'delta-ok'">{{s.row.delta>=0?'+':''}}{{s.row.delta}}%</span></template>
+            </el-table-column>
+            <el-table-column label="状态" width="110" align="center">
+              <template slot-scope="s"><el-tag size="mini" :type="s.row.warn?'danger':'success'">{{s.row.warn?'风险预警':'正常'}}</el-tag></template>
+            </el-table-column>
+          </el-table>
+        </section>
 
-    <!-- 模块三：停车场数据自动入库 -->
-    <section class="panel">
-      <div class="panel__head">
-        <h2>停车场数据自动入库</h2>
-        <span class="panel__tag">流式处理</span>
+        <!-- 视图二：工程表执行打卡可视化 -->
+        <section v-show="active==='clock'" class="panel">
+          <div class="panel__head">
+            <h2>工程表执行打卡可视化</h2>
+            <span class="panel__tag">运维执行</span>
+          </div>
+          <p class="panel__cap">运维人员执行<b>运维组长下发的工程表</b>时进行打卡登记，监控各工程表的执行进度与到岗情况。</p>
+          <h3 class="sub">工程表执行打卡实例</h3>
+          <div class="tb">
+            <el-button type="primary" size="small" @click="dialogVisible=true">导入工程表</el-button>
+            <span class="tb__hint">可粘贴或上传 CSV（格式：时间段,执行人,执行内容）</span>
+          </div>
+          <el-dialog title="导入工程表" :visible.sync="dialogVisible" width="520px" :close-on-click-modal="false">
+            <el-input type="textarea" v-model="importText" :rows="8" placeholder="每行一条，逗号 / 制表符分隔：时间段,执行人,执行内容"></el-input>
+            <div class="up">
+              <span class="tb__hint">或选择本地 CSV / TXT 文件：</span>
+              <input type="file" accept=".csv,.txt" @change="handleFile" />
+            </div>
+            <div slot="footer">
+              <el-button size="small" @click="downloadTemplate">下载模板</el-button>
+              <el-button size="small" @click="dialogVisible=false">取消</el-button>
+              <el-button size="small" type="primary" @click="importData">确认导入</el-button>
+            </div>
+          </el-dialog>
+          <el-table :data="clockRows" stripe size="small" style="width:100%">
+            <el-table-column prop="time" label="时间段" width="150"></el-table-column>
+            <el-table-column prop="who" label="执行人" width="110" align="center"></el-table-column>
+            <el-table-column prop="task" label="执行内容"></el-table-column>
+            <el-table-column label="状态" width="110" align="center">
+              <template slot-scope="s"><el-tag size="mini" type="success">{{s.row.status}}</el-tag></template>
+            </el-table-column>
+          </el-table>
+        </section>
+
+        <!-- 视图三：停车场数据自动入库 -->
+        <section v-show="active==='park'" class="panel">
+          <div class="panel__head">
+            <h2>停车场数据自动入库</h2>
+            <span class="panel__tag">流式处理</span>
+          </div>
+          <div class="ingest__head">
+            <span>停车场数据自动入库流水</span>
+            <span class="ingest__count">今日已入库 <b>{{parkDone}}</b> 条</span>
+          </div>
+          <el-table :data="parkRows" stripe size="small" style="width:100%">
+            <el-table-column prop="plate" label="车牌" width="130"></el-table-column>
+            <el-table-column prop="park" label="停车场" width="150"></el-table-column>
+            <el-table-column prop="time" label="入场时间" width="110" align="center"></el-table-column>
+            <el-table-column label="入库状态">
+              <template slot-scope="s"><el-tag size="mini" :class="statusClass(s.row.status)">{{s.row.status}}</el-tag></template>
+            </el-table-column>
+          </el-table>
+        </section>
       </div>
-      <div class="ingest__head">
-        <span>停车场数据自动入库流水</span>
-        <span class="ingest__count">今日已入库 <b id="ingestCount">0</b> 条</span>
-      </div>
-      <div id="parkApp" class="etbl">
-        <el-table :data="rows" stripe size="small" style="width:100%">
-          <el-table-column prop="plate" label="车牌" width="130"></el-table-column>
-          <el-table-column prop="park" label="停车场" width="150"></el-table-column>
-          <el-table-column prop="time" label="入场时间" width="110" align="center"></el-table-column>
-          <el-table-column label="入库状态">
-            <template slot-scope="s"><el-tag size="mini" :class="statusClass(s.row.status)">{{s.row.status}}</el-tag></template>
-          </el-table-column>
-        </el-table>
-      </div>
-    </section>
+    </div>
 
     <footer class="foot">
       <p>说明：本页为纯前端演示，全部数据由本地随机模拟生成，与任何真实业务系统、企业数据无关。技术栈原为 Django + Bootstrap（MVT，前后端不完全分离），此处重构为静态前端演示版。</p>

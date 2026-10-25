@@ -1,4 +1,4 @@
-/* 数据监控平台 · 演示版 —— 三大模块的 el-table 数据（Vue + Element UI） */
+/* 数据监控平台 · 演示版 —— 左栏导航 + 三大模块视图（Vue + Element UI） */
 (function () {
   "use strict";
   if (typeof Vue === "undefined" || typeof ELEMENT === "undefined") return;
@@ -26,14 +26,6 @@
     };
   });
 
-  new Vue({
-    el: "#mapApp",
-    data: { rows: mapRows },
-    methods: {
-      rowClass: function (scope) { return scope.row.warn ? "row-warn" : ""; }
-    }
-  });
-
   /* ---------- 模块二：工程表执行打卡实例 ---------- */
   var clockRows = [
     { time: "02:00-03:00", who: "小明", task: "执行母库批处理 SQL", status: "已打卡" },
@@ -43,7 +35,6 @@
     { time: "06:00-07:00", who: "小张", task: "执行 Eureka 配置", status: "已打卡" },
     { time: "01:00-02:00", who: "小赵", task: "执行数据库备份", status: "已打卡" }
   ];
-  new Vue({ el: "#clockApp", data: { rows: clockRows } });
 
   /* ---------- 模块三：停车场数据自动入库（含全部入库状态枚举） ---------- */
   var STATUS_CLASS = {
@@ -63,13 +54,65 @@
     { plate: "京A·55631", park: "滨江枢纽", time: "08:36", status: "解压失败" },
     { plate: "沪B·14908", park: "环球中心", time: "08:39", status: "入库失败" }
   ];
-  var done = parkRows.filter(function (p) { return p.status === "入库完成"; }).length;
-  var countEl = document.getElementById("ingestCount");
-  if (countEl) countEl.textContent = done;
 
   new Vue({
-    el: "#parkApp",
-    data: { rows: parkRows },
-    methods: { statusClass: function (s) { return STATUS_CLASS[s] || ""; } }
+    el: "#app",
+    data: {
+      active: "map",
+      mapRows: mapRows,
+      clockRows: clockRows,
+      parkRows: parkRows,
+      dialogVisible: false,
+      importText: ""
+    },
+    computed: {
+      parkDone: function () {
+        return this.parkRows.filter(function (p) { return p.status === "入库完成"; }).length;
+      }
+    },
+    methods: {
+      onSelect: function (index) { this.active = index; },
+      rowClass: function (scope) { return scope.row.warn ? "row-warn" : ""; },
+      statusClass: function (s) { return STATUS_CLASS[s] || ""; },
+      importData: function () {
+        var text = (this.importText || "").trim();
+        if (!text) return;
+        var self = this;
+        text.split(/\r?\n/).forEach(function (line) {
+          var parts = line.split(/[,，\t]/).map(function (x) { return x.trim(); });
+          if (parts.length >= 2 && parts[0]) {
+            self.clockRows.push({
+              time: parts[0],
+              who: parts[1] || "—",
+              task: (parts.slice(2).join(" ") || "—"),
+              status: "已打卡"
+            });
+          }
+        });
+        this.importText = "";
+        this.dialogVisible = false;
+      },
+      handleFile: function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var self = this;
+        var reader = new FileReader();
+        reader.onload = function () { self.importText = String(reader.result || ""); };
+        reader.readAsText(file, "utf-8");
+        e.target.value = "";
+      },
+      downloadTemplate: function () {
+        var content = "时间段,执行人,执行内容\n" +
+          "02:00-03:00,小明,执行母库批处理 SQL\n" +
+          "03:00-04:00,小红,执行 Redis 初始化\n" +
+          "04:00-05:00,小王,执行服务器重启\n";
+        var blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = "工程表模板.csv";
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(url);
+      }
+    }
   });
 })();
