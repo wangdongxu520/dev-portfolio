@@ -26,20 +26,9 @@
     };
   });
 
-  var mapEvents = [
-    { time: "02:14", node: "华东大区库", text: "运维执行完成，前后数量核对一致（5210→5215 万）", level: "正常" },
-    { time: "02:31", node: "华南大区库", text: "执行后偏差 +2.99%，超 2% 阈值，触发风险预警", level: "预警" },
-    { time: "02:48", node: "母库", text: "增量同步完成，总量 2.38 亿，一致率 98.7%", level: "正常" },
-    { time: "03:05", node: "华北大区库", text: "月基线切板预热完成，等待运维执行", level: "正常" },
-    { time: "03:22", node: "西北大区库", text: "执行后数量 -0.25%，阈值内，正常", level: "正常" },
-    { time: "03:40", node: "西南大区库", text: "初始化校验通过，无风险", level: "正常" },
-    { time: "03:58", node: "华中大区库", text: "批处理执行中，已入库 2762 万", level: "正常" },
-    { time: "04:11", node: "东北大区库", text: "执行前后偏差 -0.09%，巡检通过", level: "正常" }
-  ];
-
   new Vue({
     el: "#mapApp",
-    data: { rows: mapRows, events: mapEvents },
+    data: { rows: mapRows },
     methods: {
       rowClass: function (scope) { return scope.row.warn ? "row-warn" : ""; }
     }

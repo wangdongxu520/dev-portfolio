@@ -67,15 +67,6 @@
             <template slot-scope="s"><el-tag size="mini" :type="s.row.warn?'danger':'success'">{{s.row.warn?'风险预警':'正常'}}</el-tag></template>
           </el-table-column>
         </el-table>
-        <h3 class="sub">执行监控事件</h3>
-        <el-table :data="events" size="small" style="width:100%">
-          <el-table-column prop="time" label="时间" width="90"></el-table-column>
-          <el-table-column prop="node" label="库节点" width="120"></el-table-column>
-          <el-table-column prop="text" label="事件" show-overflow-tooltip></el-table-column>
-          <el-table-column label="级别" width="90" align="center">
-            <template slot-scope="s"><el-tag size="mini" :type="s.row.level==='预警'?'warning':'info'">{{s.row.level}}</el-tag></template>
-          </el-table-column>
-        </el-table>
       </div>
     </section>
 
@@ -86,20 +77,6 @@
         <span class="panel__tag">运维执行</span>
       </div>
       <p class="panel__cap">运维人员执行<b>运维组长下发的工程表</b>时进行打卡登记，监控各工程表的执行进度与到岗情况。</p>
-      <div class="charts">
-        <div class="chart-card">
-          <h3>各工程表执行打卡人次</h3>
-          <canvas id="chartBar"></canvas>
-        </div>
-        <div class="chart-card">
-          <h3>近 7 日执行打卡趋势</h3>
-          <canvas id="chartLine"></canvas>
-        </div>
-        <div class="chart-card">
-          <h3>打卡状态分布</h3>
-          <canvas id="chartDonut"></canvas>
-        </div>
-      </div>
       <h3 class="sub">工程表执行打卡实例</h3>
       <div id="clockApp" class="etbl">
         <el-table :data="rows" stripe size="small" style="width:100%">
@@ -140,7 +117,6 @@
     </footer>
   </main>
 
-  <script src="vendor/chart.umd.min.js"></script>
   <script src="../vendor/vue.min.js"></script>
   <script src="../vendor/element-ui.js"></script>
   <script src="tables.js"></script>
