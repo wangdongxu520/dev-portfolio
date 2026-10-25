@@ -23,23 +23,23 @@
     <!-- KPI -->
     <section class="kpis">
       <div class="kpi">
-        <div class="kpi__label">监控点位</div>
-        <div class="kpi__value" data-count="1286">0</div>
+        <div class="kpi__label">大区库节点</div>
+        <div class="kpi__value" data-count="31">0</div>
         <div class="kpi__unit">个</div>
       </div>
       <div class="kpi">
-        <div class="kpi__label">今日数据量</div>
-        <div class="kpi__value" data-count="47200" data-div="10000" data-decimals="2">0</div>
-        <div class="kpi__unit">万条</div>
+        <div class="kpi__label">母库记录总量</div>
+        <div class="kpi__value" data-count="23793" data-div="10000" data-decimals="2">0</div>
+        <div class="kpi__unit">亿条</div>
       </div>
       <div class="kpi">
-        <div class="kpi__label">自动入库成功率</div>
-        <div class="kpi__value" data-count="99.3" data-decimals="1">0</div>
+        <div class="kpi__label">执行前后一致率</div>
+        <div class="kpi__value" data-count="98.7" data-decimals="1">0</div>
         <div class="kpi__unit">%</div>
       </div>
       <div class="kpi kpi--warn">
-        <div class="kpi__label">异常告警</div>
-        <div class="kpi__value" data-count="7">0</div>
+        <div class="kpi__label">风险预警</div>
+        <div class="kpi__value" data-count="1">0</div>
         <div class="kpi__unit">条</div>
       </div>
     </section>
@@ -48,26 +48,26 @@
     <section class="panel panel--map">
       <div class="panel__head">
         <h2>全国地图数据监控</h2>
-        <span class="panel__tag">实时</span>
+        <span class="panel__tag">实时核对</span>
       </div>
+      <p class="panel__cap">监控全国<b>大区库</b>与<b>母库</b>在运维执行<b>前后</b>的数量变化，偏差超阈值即触发风险预警，防止运维执行出错。</p>
       <div class="map">
-        <svg class="map__svg" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet" aria-label="监测网络示意">
+        <svg class="map__svg" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet" aria-label="大区库-母库拓扑示意">
           <defs>
             <radialGradient id="glow" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.35" />
               <stop offset="100%" stop-color="#22d3ee" stop-opacity="0" />
             </radialGradient>
           </defs>
-          <g class="map__grid" id="mapGrid"></g>
           <g class="map__links" id="mapLinks"></g>
           <g class="map__nodes" id="mapNodes"></g>
         </svg>
-        <div class="map__legend">● 正常 &nbsp; ● 预警 &nbsp; ◐ 采集中</div>
+        <div class="map__legend">● 正常 &nbsp; ● 风险预警 &nbsp; ● 母库</div>
       </div>
       <aside class="map__side">
-        <h3>区域状态</h3>
+        <h3>大区库核对（执行前后）</h3>
         <ul class="region" id="regionList"></ul>
-        <h3>实时事件</h3>
+        <h3>执行监控事件</h3>
         <ul class="feed" id="eventFeed"></ul>
       </aside>
     </section>

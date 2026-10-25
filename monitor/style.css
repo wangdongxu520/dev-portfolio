@@ -138,17 +138,26 @@ a { color: inherit; text-decoration: none; }
   padding: 2px 9px;
   border-radius: 20px;
 }
+.panel__cap {
+  grid-column: 1 / -1;
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.panel__cap b { color: var(--ink); font-weight: 600; }
 
 /* 地图模块 */
 .panel--map {
   display: grid;
   grid-template-columns: 1fr 280px;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
   gap: 16px;
 }
-.panel--map .panel__head { grid-column: 1 / -1; }
-.panel--map .map { grid-column: 1; grid-row: 2; }
-.panel--map .map__side { grid-column: 2; grid-row: 2; }
+.panel--map .panel__head { grid-column: 1 / -1; grid-row: 1; }
+.panel--map .panel__cap { grid-column: 1 / -1; grid-row: 2; }
+.panel--map .map { grid-column: 1; grid-row: 3; }
+.panel--map .map__side { grid-column: 2; grid-row: 3; }
 .map {
   position: relative;
   background:
@@ -168,22 +177,24 @@ a { color: inherit; text-decoration: none; }
 }
 .map__node circle.dot { fill: var(--green); }
 .map__node--warn circle.dot { fill: var(--amber); }
-.map__node--coll circle.dot { fill: var(--cyan); }
+.map__node--master circle.dot { fill: var(--blue); }
 .map__node text {
   fill: var(--ink); font-size: 12px; font-family: var(--font);
 }
 .map__node .pulse { fill: var(--green); opacity: .5; }
 .map__node--warn .pulse { fill: var(--amber); }
-.map__node--coll .pulse { fill: var(--cyan); }
+.map__node--master .pulse { fill: var(--blue); }
 
-.map__side { display: flex; flex-direction: column; gap: 10px; }
+.map__side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .map__side h3 { margin: 4px 0; font-size: 14px; color: var(--muted); font-weight: 600; }
 .region { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .region li {
-  display: flex; justify-content: space-between; align-items: center;
-  font-size: 13px; padding: 7px 10px;
+  display: block;
+  font-size: 13px; padding: 8px 10px;
   background: var(--bg2); border: 1px solid var(--line); border-radius: 8px;
 }
+.region li .rc__top { display: flex; justify-content: space-between; align-items: center; }
+.region li .rc__num { color: var(--muted); font-size: 12px; margin-top: 3px; font-variant-numeric: tabular-nums; }
 .region .st { font-size: 12px; }
 .st--ok { color: var(--green); }
 .st--warn { color: var(--amber); }
