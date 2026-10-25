@@ -3,3 +3,4 @@
 *.tmp
 .push_tmp.py
 .preview.png
+.preview*.png

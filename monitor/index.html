@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数据监控平台 · 演示</title>
+  <meta name="description" content="数据监控平台 · 纯前端演示版（自学探索，Django + Bootstrap 原型的重构版）——全国地图数据监控 / 打卡可视化 / 停车场数据自动入库。" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="topbar__back" href="../">← 返回作品集</a>
+      <div class="topbar__title">
+        <h1>数据监控平台</h1>
+        <p>纯前端演示版 · 自学探索（Django + Bootstrap · MVT 原型重构）</p>
+      </div>
+      <span class="topbar__clock" id="clock">--:--:--</span>
+    </div>
+  </header>
+
+  <main class="dash">
+    <!-- KPI -->
+    <section class="kpis">
+      <div class="kpi">
+        <div class="kpi__label">监控点位</div>
+        <div class="kpi__value" data-count="1286">0</div>
+        <div class="kpi__unit">个</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi__label">今日数据量</div>
+        <div class="kpi__value" data-count="47200" data-div="10000" data-decimals="2">0</div>
+        <div class="kpi__unit">万条</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi__label">自动入库成功率</div>
+        <div class="kpi__value" data-count="99.3" data-decimals="1">0</div>
+        <div class="kpi__unit">%</div>
+      </div>
+      <div class="kpi kpi--warn">
+        <div class="kpi__label">异常告警</div>
+        <div class="kpi__value" data-count="7">0</div>
+        <div class="kpi__unit">条</div>
+      </div>
+    </section>
+
+    <!-- 模块一：全国地图数据监控 -->
+    <section class="panel panel--map">
+      <div class="panel__head">
+        <h2>全国地图数据监控</h2>
+        <span class="panel__tag">实时</span>
+      </div>
+      <div class="map">
+        <svg class="map__svg" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet" aria-label="监测网络示意">
+          <defs>
+            <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="#22d3ee" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <g class="map__grid" id="mapGrid"></g>
+          <g class="map__links" id="mapLinks"></g>
+          <g class="map__nodes" id="mapNodes"></g>
+        </svg>
+        <div class="map__legend">● 正常 &nbsp; ● 预警 &nbsp; ◐ 采集中</div>
+      </div>
+      <aside class="map__side">
+        <h3>区域状态</h3>
+        <ul class="region" id="regionList"></ul>
+        <h3>实时事件</h3>
+        <ul class="feed" id="eventFeed"></ul>
+      </aside>
+    </section>
+
+    <!-- 模块二：打卡可视化 -->
+    <section class="panel">
+      <div class="panel__head">
+        <h2>打卡可视化</h2>
+        <span class="panel__tag">近 7 日</span>
+      </div>
+      <div class="charts">
+        <div class="chart-card">
+          <h3>各区域打卡人数</h3>
+          <canvas id="chartBar"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>打卡趋势</h3>
+          <canvas id="chartLine"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>打卡状态分布</h3>
+          <canvas id="chartDonut"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- 模块三：停车场数据自动入库 -->
+    <section class="panel">
+      <div class="panel__head">
+        <h2>停车场数据自动入库</h2>
+        <span class="panel__tag">流式处理</span>
+      </div>
+      <div class="pipeline" id="pipeline">
+        <div class="stage" data-stage="0"><span class="stage__no">1</span>数据源采集</div>
+        <span class="stage__arrow">→</span>
+        <div class="stage" data-stage="1"><span class="stage__no">2</span>数据解析</div>
+        <span class="stage__arrow">→</span>
+        <div class="stage" data-stage="2"><span class="stage__no">3</span>规则校验</div>
+        <span class="stage__arrow">→</span>
+        <div class="stage" data-stage="3"><span class="stage__no">4</span>自动入库</div>
+      </div>
+      <div class="ingest">
+        <div class="ingest__head">
+          <span>实时入库流水</span>
+          <span class="ingest__count">今日已入库 <b id="ingestCount">0</b> 条</span>
+        </div>
+        <div class="ingest__table">
+          <div class="row row--head">
+            <span>车牌</span><span>停车场</span><span>入场时间</span><span>状态</span>
+          </div>
+          <div id="ingestRows"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p>说明：本页为纯前端演示，全部数据由本地随机模拟生成，与任何真实业务系统、企业数据无关。技术栈原为 Django + Bootstrap（MVT，前后端不完全分离），此处重构为静态前端演示版。</p>
+    </footer>
+  </main>
+
+  <script src="vendor/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

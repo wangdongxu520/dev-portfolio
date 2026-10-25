@@ -105,6 +105,13 @@ a { color: inherit; text-decoration: none; }
   color: var(--muted);
 }
 
+.lane__link {
+  color: var(--accent);
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+}
+.lane__link:hover { opacity: 0.75; }
+
 .lane__track {
   display: flex;
   align-items: stretch;
