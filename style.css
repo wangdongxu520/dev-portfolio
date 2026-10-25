@@ -1,0 +1,117 @@
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --ink: #16181d;
+  --muted: #5f6470;
+  --line: #e6e8ec;
+  --accent: #3b5bdb;
+  --maxw: 940px;
+  --font: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* 顶部：名字 + 简介 */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar__inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 28px 24px 22px;
+  text-align: center;
+}
+
+.topbar__name {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 44px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.topbar__intro {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: clamp(14px, 2.4vw, 17px);
+}
+
+/* 内容区 */
+.content {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 30px 24px 60px;
+}
+
+/* Element UI 标签页配色覆盖 */
+.el-tabs__active-bar { background-color: var(--accent); }
+.el-tabs__item { font-size: 15px; font-weight: 600; color: var(--muted); }
+.el-tabs__item.is-active { color: var(--accent); }
+.el-tabs__item:hover { color: var(--accent); }
+.el-tabs__nav-wrap::after { background-color: var(--line); }
+
+.panel { padding-top: 18px; }
+.panel__title {
+  margin: 0 0 10px;
+  font-size: clamp(22px, 4vw, 30px);
+  font-weight: 700;
+}
+.panel__lead { margin: 0 0 18px; color: var(--muted); font-size: 16px; }
+
+/* 流程图（LogicFlow 画布） */
+.flow {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.flow-canvas {
+  width: 100%;
+  height: 620px;
+  background: #fbfcfe;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.flow__hint {
+  margin: 10px 2px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+@media (max-width: 720px) {
+  .flow-canvas { height: 460px; }
+}
+
+/* 页脚 */
+.footer {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 28px 24px 50px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+.footer a:hover { color: var(--accent); }
+
+@media (max-width: 720px) {
+  .footer { flex-direction: column; gap: 8px; text-align: center; }
+}

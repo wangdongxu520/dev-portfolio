@@ -1,0 +1,4 @@
+.workbuddy/
+.git/
+*.tmp
+.push_tmp.py
