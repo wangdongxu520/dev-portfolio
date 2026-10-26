@@ -171,6 +171,24 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
+/* 纵向泳道（自动化运维主线：需求到交付） */
+.lane__track--v {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+.lane__track--v .node {
+  flex: 0 0 auto;
+  text-align: left;
+  justify-content: flex-start;
+  margin: 0;
+}
+.lane__track--v .arrow {
+  align-self: center;
+  transform: rotate(90deg);
+  margin: 2px 0;
+}
+
 /* ---------- 自动化运维平台 ---------- */
 .ops-h {
   margin: 26px 0 12px;
