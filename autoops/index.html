@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>自动化运维平台 · 演示</title>
-  <meta name="description" content="自动化运维平台 · 纯前端演示版 —— 项目背景 / 技术栈 / 核心职责 / 数据看板（ECharts 钻取）/ 需求到交付流程主线。" />
+  <meta name="description" content="自动化运维平台 · 纯前端演示版 —— 入场离场 / 服务管理 / 建单告警 / 风险管理 / 数据看板。" />
   <link rel="stylesheet" href="../vendor/element-ui.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -14,7 +14,7 @@
       <a class="topbar__back" href="../">← 返回作品集</a>
       <div class="topbar__title">
         <h1>自动化运维平台</h1>
-        <p>纯前端演示版 · 人员管理 / 风险监控 / 评论监控 等系统可视化与自动化</p>
+        <p>纯前端演示版 · 入场离场 / 服务管理 / 建单告警 / 风险管理 / 数据看板 一体化运维平台</p>
       </div>
       <span class="topbar__clock" id="clock">--:--:--</span>
     </div>
@@ -24,19 +24,19 @@
     <!-- KPI -->
     <section class="kpis">
       <div class="kpi">
-        <div class="kpi__label">接入系统模块</div>
-        <div class="kpi__value" data-count="4">0</div>
+        <div class="kpi__label">管理模块</div>
+        <div class="kpi__value" data-count="5">0</div>
         <div class="kpi__unit">个</div>
       </div>
       <div class="kpi">
-        <div class="kpi__label">核心职责项</div>
-        <div class="kpi__value" data-count="3">0</div>
-        <div class="kpi__unit">项</div>
+        <div class="kpi__label">在册人员</div>
+        <div class="kpi__value" data-count="28">0</div>
+        <div class="kpi__unit">人</div>
       </div>
       <div class="kpi">
-        <div class="kpi__label">数据库迁移</div>
-        <div class="kpi__value" data-count="2">0</div>
-        <div class="kpi__unit">套</div>
+        <div class="kpi__label">在线服务</div>
+        <div class="kpi__value" data-count="16">0</div>
+        <div class="kpi__unit">个</div>
       </div>
       <div class="kpi kpi--warn">
         <div class="kpi__label">告警闭环率</div>
@@ -48,84 +48,96 @@
     <!-- 左栏导航 + 右侧内容 -->
     <div id="app" class="layout">
       <aside class="side">
-        <div class="side__title">自动化运维</div>
+        <div class="side__title">运维模块</div>
         <el-menu :default-active="active" @select="onSelect" class="side__menu">
-          <el-menu-item index="background"><i class="el-icon-document"></i><span slot="title">项目背景</span></el-menu-item>
-          <el-menu-item index="stack"><i class="el-icon-coin"></i><span slot="title">技术栈</span></el-menu-item>
-          <el-menu-item index="duty"><i class="el-icon-s-custom"></i><span slot="title">核心职责</span></el-menu-item>
+          <el-menu-item index="entry"><i class="el-icon-user"></i><span slot="title">入场离场</span></el-menu-item>
+          <el-menu-item index="service"><i class="el-icon-s-platform"></i><span slot="title">服务管理</span></el-menu-item>
+          <el-menu-item index="ticket"><i class="el-icon-bell"></i><span slot="title">建单告警</span></el-menu-item>
+          <el-menu-item index="risk"><i class="el-icon-warning"></i><span slot="title">风险管理</span></el-menu-item>
           <el-menu-item index="dashboard"><i class="el-icon-data-line"></i><span slot="title">数据看板</span></el-menu-item>
-          <el-menu-item index="flow"><i class="el-icon-share"></i><span slot="title">流程主线</span></el-menu-item>
         </el-menu>
       </aside>
 
       <div class="content">
-        <!-- 视图一：项目背景 -->
-        <section v-show="active==='background'" class="panel">
+        <!-- 视图一：入场离场 -->
+        <section v-show="active==='entry'" class="panel etbl">
           <div class="panel__head">
-            <h2>项目背景</h2>
-            <span class="panel__tag">平台定位</span>
+            <h2>入场离场</h2>
+            <span class="panel__tag">人员考勤</span>
           </div>
-          <p class="panel__cap">面向运维场景的<strong>可视化与自动化平台</strong>，覆盖人员管理、风险监控、评论监控等系统，将日常运维动作沉淀为标准化看板与告警流程，降低人工核对成本，提升异常响应速度。</p>
-          <div class="bg-grid">
-            <div class="bg-card">
-              <h4>痛点</h4>
-              <p>开发人员入场离场、服务管理、建单告警、风险管理等动作分散，依赖人工核对，异常响应慢、易遗漏。</p>
-            </div>
-            <div class="bg-card">
-              <h4>目标</h4>
-              <p>用一套带数据看板的运维平台统一收敛上述动作，让关键指标一眼可见、可溯源、可钻取。</p>
-            </div>
-            <div class="bg-card">
-              <h4>价值</h4>
-              <p>降低人工核对成本，提升异常响应速度与系统稳定性（含 Oracle→PG、ES5→ES7 平滑迁移）。</p>
-            </div>
-          </div>
+          <p class="panel__cap">开发人员<strong>入场 / 离场</strong>登记与在场管理，实时掌握团队到岗情况。</p>
+          <el-table :data="entryRows" stripe size="small" style="width:100%">
+            <el-table-column prop="name" label="姓名" width="120"></el-table-column>
+            <el-table-column prop="role" label="角色" width="120"></el-table-column>
+            <el-table-column prop="in" label="入场时间" width="130" align="center"></el-table-column>
+            <el-table-column prop="out" label="离场时间" width="130" align="center"></el-table-column>
+            <el-table-column label="状态" width="110" align="center">
+              <template slot-scope="s"><el-tag size="mini" :type="s.row.online?'success':'info'">{{s.row.online?'在场':'已离场'}}</el-tag></template>
+            </el-table-column>
+          </el-table>
         </section>
 
-        <!-- 视图二：技术栈 -->
-        <section v-show="active==='stack'" class="panel">
+        <!-- 视图二：服务管理 -->
+        <section v-show="active==='service'" class="panel etbl">
           <div class="panel__head">
-            <h2>技术栈</h2>
-            <span class="panel__tag">技术选型</span>
+            <h2>服务管理</h2>
+            <span class="panel__tag">健康度</span>
           </div>
-          <p class="panel__cap">前端可视化与后端数据层协同，兼顾存量系统迁移改造。</p>
-          <div class="chips">
-            <div class="chip"><b>Vue</b><span>前端框架</span></div>
-            <div class="chip"><b>ECharts</b><span>可视化图表</span></div>
-            <div class="chip"><b>MVT</b><span>架构模式</span></div>
-            <div class="chip"><b>Element UI</b><span>组件库</span></div>
-            <div class="chip"><b>Oracle</b><span>源数据库</span></div>
-            <div class="chip"><b>PostgreSQL</b><span>目标数据库</span></div>
-          </div>
+          <p class="panel__cap">运维<strong>服务</strong>注册、实例数与运行健康度监控，异常服务即时标红。</p>
+          <el-table :data="serviceRows" stripe size="small" style="width:100%">
+            <el-table-column prop="svc" label="服务名" width="180"></el-table-column>
+            <el-table-column prop="type" label="类型" width="120"></el-table-column>
+            <el-table-column prop="inst" label="实例数" width="100" align="center"></el-table-column>
+            <el-table-column label="状态" width="110" align="center">
+              <template slot-scope="s"><el-tag size="mini" :type="s.row.status==='运行中'?'success':'danger'">{{s.row.status}}</el-tag></template>
+            </el-table-column>
+            <el-table-column label="健康度" align="right">
+              <template slot-scope="s"><span :class="s.row.health>=90?'delta-ok':'delta-warn'">{{s.row.health}}%</span></template>
+            </el-table-column>
+          </el-table>
         </section>
 
-        <!-- 视图三：核心职责 -->
-        <section v-show="active==='duty'" class="panel">
+        <!-- 视图三：建单告警 -->
+        <section v-show="active==='ticket'" class="panel etbl">
           <div class="panel__head">
-            <h2>核心职责</h2>
-            <span class="panel__tag">我的工作</span>
+            <h2>建单告警</h2>
+            <span class="panel__tag">闭环跟踪</span>
           </div>
-          <p class="panel__cap">三方面落地：前端开发、可视化交互、数据库迁移改造。</p>
-          <div class="duty-cards">
-            <div class="duty">
-              <div class="duty__no">01</div>
-              <h4>Vue 前端开发</h4>
-              <p>开发人员入场离场、服务管理、建单告警、风险管理、数据看板等模块的前端实现，基于 MVT 架构与 Element UI 组件库搭建。</p>
-            </div>
-            <div class="duty">
-              <div class="duty__no">02</div>
-              <h4>ECharts 可视化</h4>
-              <p>实现报表、流程图、饼图等交互图表，支持点击钻取下钻明细，让运维指标一眼可见、可溯源。</p>
-            </div>
-            <div class="duty">
-              <div class="duty__no">03</div>
-              <h4>数据库迁移改造</h4>
-              <p>完成 Oracle → PostgreSQL、ES5 → ES7 的代码改造，兼顾存量 SQL 与查询语法，保障系统稳定迁移、平滑过渡。</p>
-            </div>
-          </div>
+          <p class="panel__cap">告警触发后<strong>自动建单</strong>，跟踪工单级别与处理闭环状态。</p>
+          <el-table :data="ticketRows" stripe size="small" style="width:100%">
+            <el-table-column prop="no" label="工单号" width="130"></el-table-column>
+            <el-table-column prop="src" label="来源" width="120"></el-table-column>
+            <el-table-column label="级别" width="100" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="'lv-'+s.row.level">{{s.row.level}}</el-tag></template>
+            </el-table-column>
+            <el-table-column label="状态" width="120" align="center">
+              <template slot-scope="s"><el-tag size="mini" :type="s.row.status==='已闭环'?'success':(s.row.status==='处理中'?'warning':'info')">{{s.row.status}}</el-tag></template>
+            </el-table-column>
+            <el-table-column prop="time" label="创建时间" align="center"></el-table-column>
+          </el-table>
         </section>
 
-        <!-- 视图四：数据看板 -->
+        <!-- 视图四：风险管理 -->
+        <section v-show="active==='risk'" class="panel etbl">
+          <div class="panel__head">
+            <h2>风险管理</h2>
+            <span class="panel__tag">定级处置</span>
+          </div>
+          <p class="panel__cap">风险项<strong>登记、定级与处置</strong>跟踪，高风险项重点盯防。</p>
+          <el-table :data="riskRows" stripe size="small" style="width:100%">
+            <el-table-column prop="item" label="风险项" min-width="160"></el-table-column>
+            <el-table-column label="等级" width="100" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="'lv-'+s.row.level">{{s.row.level}}</el-tag></template>
+            </el-table-column>
+            <el-table-column prop="owner" label="责任人" width="110" align="center"></el-table-column>
+            <el-table-column label="状态" width="120" align="center">
+              <template slot-scope="s"><el-tag size="mini" :type="s.row.status==='已闭环'?'success':(s.row.status==='处置中'?'warning':'info')">{{s.row.status}}</el-tag></template>
+            </el-table-column>
+            <el-table-column prop="found" label="发现时间" align="center"></el-table-column>
+          </el-table>
+        </section>
+
+        <!-- 视图五：数据看板 -->
         <section v-show="active==='dashboard'" class="panel">
           <div class="panel__head">
             <h2>数据看板</h2>
@@ -135,42 +147,6 @@
           <div class="ops-charts">
             <div class="ops-chart"><div id="opsPie" class="ops-chart__c"></div></div>
             <div class="ops-chart"><div id="opsBar" class="ops-chart__c"></div></div>
-          </div>
-        </section>
-
-        <!-- 视图五：流程主线 -->
-        <section v-show="active==='flow'" class="panel">
-          <div class="panel__head">
-            <h2>流程主线 · 需求到交付全流程</h2>
-            <span class="panel__tag">12 步</span>
-          </div>
-          <p class="panel__cap">从人保用户提需求到最终交付的生产环境上线全流程。</p>
-          <div class="flow">
-            <div class="lane__track lane__track--v">
-              <div class="node node--trigger">1 · 人保用户和需求提需求</div>
-              <span class="arrow">→</span>
-              <div class="node">2 · 需求和我们开发进行讨论对接</div>
-              <span class="arrow">→</span>
-              <div class="node">3 · 开发完善功能点拆解和代办事项列表文档</div>
-              <span class="arrow">→</span>
-              <div class="node">4 · 功能点会议评审与任务排期</div>
-              <span class="arrow">→</span>
-              <div class="node">5 · 开发写代码</div>
-              <span class="arrow">→</span>
-              <div class="node">6 · 开发 Postman 编码自测</div>
-              <span class="arrow">→</span>
-              <div class="node">7 · 前后端开发联调测试</div>
-              <span class="arrow">→</span>
-              <div class="node">8 · 部署上线开发测试环境</div>
-              <span class="arrow">→</span>
-              <div class="node">9 · 部署上线功能测试环境</div>
-              <span class="arrow">→</span>
-              <div class="node">10 · 需求测试功能</div>
-              <span class="arrow">→</span>
-              <div class="node">11 · 没问题后上线生产环境</div>
-              <span class="arrow">→</span>
-              <div class="node node--end">12 · 交付人保用户</div>
-            </div>
           </div>
         </section>
       </div>

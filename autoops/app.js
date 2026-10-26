@@ -34,16 +34,16 @@
   var pie = null, bar = null;
   var INK = "#e6ecf7", MUTED = "#8b97b8", LINE = "#243150";
   var pieData = [
-    { name: "人员管理", value: 35 },
-    { name: "风险监控", value: 25 },
-    { name: "评论监控", value: 20 },
-    { name: "服务管理", value: 20 }
+    { name: "入场离场", value: 30 },
+    { name: "服务管理", value: 25 },
+    { name: "建单告警", value: 25 },
+    { name: "风险管理", value: 20 }
   ];
   var drill = {
-    "人员管理": [12, 15, 13, 18, 20, 17, 16],
-    "风险监控": [8, 9, 7, 11, 10, 12, 9],
-    "评论监控": [6, 7, 5, 8, 9, 7, 6],
-    "服务管理": [7, 8, 6, 9, 10, 8, 7]
+    "入场离场": [18, 20, 19, 22, 21, 17, 20],
+    "服务管理": [14, 16, 15, 17, 16, 18, 15],
+    "建单告警": [9, 11, 8, 12, 10, 9, 11],
+    "风险管理": [6, 7, 5, 8, 7, 6, 7]
   };
   var days = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 
@@ -65,7 +65,7 @@
       pie = echarts.init(document.getElementById("opsPie"));
       bar = echarts.init(document.getElementById("opsBar"));
       pie.setOption({
-        title: { text: "系统模块分布", left: "center", textStyle: { color: INK, fontSize: 14 } },
+        title: { text: "各模块事件分布", left: "center", textStyle: { color: INK, fontSize: 14 } },
         tooltip: { trigger: "item" },
         legend: { bottom: 0, textStyle: { color: MUTED } },
         series: [{
@@ -74,7 +74,7 @@
           color: ["#3b82f6", "#22d3ee", "#34d399", "#fbbf24"]
         }]
       });
-      renderBar("人员管理");
+      renderBar("入场离场");
       pie.on("click", function (p) { if (p && p.name) renderBar(p.name); });
     } catch (e) { console.error("initChart error", e); }
   }
@@ -89,10 +89,38 @@
     if (bar) bar.resize();
   });
 
-  /* ---------- Vue 导航 ---------- */
+  /* ---------- Vue 导航（5 个模块标签） ---------- */
   new Vue({
     el: "#app",
-    data: { active: "background" },
+    data: {
+      active: "entry",
+      entryRows: [
+        { name: "张伟", role: "后端开发", in: "08:55", out: "18:30", online: false },
+        { name: "李娜", role: "前端开发", in: "09:10", out: "—", online: true },
+        { name: "王强", role: "测试", in: "09:02", out: "18:15", online: false },
+        { name: "赵敏", role: "运维", in: "08:40", out: "—", online: true },
+        { name: "陈杰", role: "算法", in: "09:20", out: "18:40", online: false }
+      ],
+      serviceRows: [
+        { svc: "user-service", type: "微服务", inst: 4, status: "运行中", health: 98 },
+        { svc: "order-service", type: "微服务", inst: 3, status: "运行中", health: 99 },
+        { svc: "gateway", type: "网关", inst: 2, status: "运行中", health: 100 },
+        { svc: "risk-engine", type: "引擎", inst: 2, status: "异常", health: 76 },
+        { svc: "notify-service", type: "微服务", inst: 2, status: "运行中", health: 97 }
+      ],
+      ticketRows: [
+        { no: "WD-2041", src: "监控告警", level: "高", status: "已闭环", time: "10-26 09:12" },
+        { no: "WD-2042", src: "人工上报", level: "中", status: "处理中", time: "10-26 10:05" },
+        { no: "WD-2043", src: "监控告警", level: "低", status: "待处理", time: "10-26 11:20" },
+        { no: "WD-2044", src: "日志分析", level: "中", status: "已闭环", time: "10-26 13:40" }
+      ],
+      riskRows: [
+        { item: "数据库主从延迟", level: "高", owner: "王强", status: "处置中", found: "10-25 14:00" },
+        { item: "接口超时率升高", level: "中", owner: "李娜", status: "监控中", found: "10-26 09:30" },
+        { item: "证书即将过期", level: "中", owner: "赵敏", status: "已闭环", found: "10-24 16:20" },
+        { item: "权限越权风险", level: "高", owner: "王强", status: "处置中", found: "10-26 11:00" }
+      ]
+    },
     methods: {
       onSelect: function (index) {
         this.active = index;
