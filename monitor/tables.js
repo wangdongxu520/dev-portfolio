@@ -63,7 +63,10 @@
       clockRows: clockRows,
       parkRows: parkRows,
       dialogVisible: false,
-      importText: ""
+      importText: "",
+      evidenceVisible: false,
+      evidenceRow: null,
+      evidenceTime: ""
     },
     computed: {
       parkDone: function () {
@@ -73,6 +76,14 @@
     methods: {
       onSelect: function (index) { this.active = index; },
       rowClass: function (scope) { return scope.row.warn ? "row-warn" : ""; },
+      viewEvidence: function (row) {
+        this.evidenceRow = row;
+        var d = new Date();
+        var p = function (n) { return (n < 10 ? "0" : "") + n; };
+        this.evidenceTime = d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
+          " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+        this.evidenceVisible = true;
+      },
       statusClass: function (s) { return STATUS_CLASS[s] || ""; },
       importData: function () {
         var text = (this.importText || "").trim();

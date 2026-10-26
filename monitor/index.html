@@ -111,7 +111,28 @@
             <el-table-column label="状态" width="110" align="center">
               <template slot-scope="s"><el-tag size="mini" type="success">{{s.row.status}}</el-tag></template>
             </el-table-column>
+            <el-table-column label="打卡证据截图" width="120" align="center">
+              <template slot-scope="s"><el-button size="mini" @click="viewEvidence(s.row)">查看截图</el-button></template>
+            </el-table-column>
           </el-table>
+          <el-dialog title="打卡证据截图" :visible.sync="evidenceVisible" width="380px" :close-on-click-modal="false">
+            <div class="evidence" v-if="evidenceRow">
+              <div class="evidence__bar">
+                <span>数据监控平台</span>
+                <span class="evidence__bar-tag">工程表打卡</span>
+              </div>
+              <div class="evidence__body">
+                <div class="evidence__title">工程表执行打卡凭证</div>
+                <div class="evidence__row"><span>执行内容</span><b>{{evidenceRow.task}}</b></div>
+                <div class="evidence__row"><span>执行人</span><b>{{evidenceRow.who}}</b></div>
+                <div class="evidence__row"><span>时间段</span><b>{{evidenceRow.time}}</b></div>
+                <div class="evidence__row"><span>打卡时间</span><b>{{evidenceTime}}</b></div>
+                <div class="evidence__status"><span class="evidence__badge">✓ 已打卡</span></div>
+                <div class="evidence__pin">定位于：运维执行现场（演示）</div>
+              </div>
+              <div class="evidence__foot">本凭证为演示数据，非真实业务记录</div>
+            </div>
+          </el-dialog>
         </section>
 
         <!-- 视图三：停车场数据自动入库 -->
