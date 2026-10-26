@@ -112,6 +112,27 @@ a { color: inherit; text-decoration: none; }
 }
 .lane__link:hover { opacity: 0.75; }
 
+/* 演示跳转 CTA（主线三 → monitor 演示页） */
+.demo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 7px 16px;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: .2s;
+}
+.demo-link:hover {
+  opacity: .92;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(59, 91, 219, .28);
+}
+
 .lane__track {
   display: flex;
   align-items: stretch;
