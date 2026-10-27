@@ -99,7 +99,21 @@
         <el-tab-pane label="CI 自动化平台" name="ci">
           <div class="panel">
             <h2 class="panel__title">CI 自动化平台</h2>
-            <p class="panel__lead">内容待补充</p>
+            <p class="panel__lead">面向华为终端开发的持续集成平台：以 manifest 编排整机自动编译，按组件树调度节点并自动收集产物（fastboot / sdcard）；打补丁模块把 repo sync、cherry-pick、编译验证与 Gerrit review 固化为可视流水线。</p>
+
+            <div class="flow">
+              <section class="lane">
+                <h3 class="lane__head"><span class="lane__dot"></span>主线 · 需求到验证闭环</h3>
+                <div class="flow-grid flow-grid--4">
+                  <div class="step step--trigger"><span class="step__no">1</span><span class="step__text">CI 小组 / 部门华为终端开发提需求</span></div>
+                  <div class="step"><span class="step__no">2</span><span class="step__text">业务主管审批确认</span></div>
+                  <div class="step"><span class="step__no">3</span><span class="step__text">我开发：分析、编码、自测与编译验证</span></div>
+                  <div class="step step--end"><span class="step__no">4</span><span class="step__text">对应提需求人验证</span></div>
+                </div>
+              </section>
+            </div>
+
+            <p class="flow-foot">完整模块演示（自动编译 / 打补丁）：<a class="lane__link" href="ci/" target="_blank" rel="noopener">查看演示 ↗</a></p>
           </div>
         </el-tab-pane>
         <el-tab-pane label="图像算法" name="image">

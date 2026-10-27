@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CI 自动化平台 · 演示</title>
+  <meta name="description" content="CI 自动化平台 · 纯前端演示版 —— 自动编译 / 打补丁（Gerrit 自动化）。" />
+  <link rel="stylesheet" href="../vendor/element-ui.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="topbar__back" href="../">← 返回作品集</a>
+      <div class="topbar__title">
+        <h1>CI 自动化平台</h1>
+        <p>纯前端演示版 · 自动编译 / 打补丁（Gerrit 自动化）</p>
+      </div>
+      <span class="topbar__clock" id="clock">--:--:--</span>
+    </div>
+  </header>
+
+  <main class="dash">
+    <!-- KPI -->
+    <section class="kpis">
+      <div class="kpi">
+        <div class="kpi__label">今日构建</div>
+        <div class="kpi__value" data-count="46">0</div>
+        <div class="kpi__unit">次 · 成功率 97.8%</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi__label">平均编译耗时</div>
+        <div class="kpi__value" data-count="38">0</div>
+        <div class="kpi__unit">分钟 · 较手工缩短 62%</div>
+      </div>
+      <div class="kpi kpi--warn">
+        <div class="kpi__label">本周补丁合入</div>
+        <div class="kpi__value" data-count="23">0</div>
+        <div class="kpi__unit">个 · 自动化合入 19 个</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi__label">manifest 仓库</div>
+        <div class="kpi__value" data-count="168">0</div>
+        <div class="kpi__unit">个 · 华为终端主线分支</div>
+      </div>
+    </section>
+
+    <div id="app" class="layout">
+      <aside class="side">
+        <div class="side__title">CI 能力</div>
+        <el-menu :default-active="active" @select="onSelect" class="side__menu">
+          <el-menu-item index="build"><i class="el-icon-cpu"></i><span slot="title">自动编译</span></el-menu-item>
+          <el-menu-item index="patch"><i class="el-icon-edit-outline"></i><span slot="title">打补丁</span></el-menu-item>
+        </el-menu>
+        <div class="side__foot">
+          <div class="side__footrow"><span>构建分支</span><b>hw-13.0.0-release</b></div>
+          <div class="side__footrow"><span>产物出口</span><b>fastboot / sdcard</b></div>
+          <div class="side__footrow"><span>编译节点</span><b>32 节点 · 18 并行</b></div>
+        </div>
+      </aside>
+
+      <div class="content">
+        <!-- 视图一：自动编译 -->
+        <section v-show="active==='build'" class="panel etbl">
+          <div class="panel__head">
+            <h2>自动编译</h2>
+            <span class="panel__tag">整机编译任务树</span>
+          </div>
+          <p class="panel__cap">
+            以 <b>manifest</b> 为编排单元，按 <b>chipset / system / vendor / product</b> 等组件树调度编译节点；
+            依赖自动排序、产物自动收集，最终输出 <b>fastboot</b> 与 <b>sdcard</b> 刷机包。
+          </p>
+
+          <div class="build">
+            <div class="build__tree">
+              <div class="build__boxhead">编译任务树 · 组件视图</div>
+              <el-tree
+                :data="treeData"
+                node-key="id"
+                default-expand-all
+                highlight-current
+                :expand-on-click-node="false"
+                :props="{ label: 'label', children: 'children' }"
+                @node-click="onNodeClick"
+                class="ci-tree">
+                <span class="ci-tree__node" slot-scope="{ data }">
+                  <i :class="data.icon || 'el-icon-folder'"></i>
+                  <span class="ci-tree__label">{{ data.label }}</span>
+                  <span class="ci-tree__state" :class="'s-' + data.state">{{ stateText(data.state) }}</span>
+                </span>
+              </el-tree>
+            </div>
+
+            <div class="build__detail">
+              <div class="build__boxhead">节点详情</div>
+              <div class="dtl" v-if="detail">
+                <div class="dtl__name">
+                  {{ detail.label }}
+                  <span class="ci-tree__state" :class="'s-' + detail.state">{{ stateText(detail.state) }}</span>
+                </div>
+                <div class="dtl__grid">
+                  <div class="dtl__row"><span>节点类型</span><b>{{ detail.kind || '组件目录' }}</b></div>
+                  <div class="dtl__row"><span>manifest 项目</span><b>{{ detail.repo || '—' }}</b></div>
+                  <div class="dtl__row"><span>产物分区</span><b>{{ detail.partition || '—' }}</b></div>
+                  <div class="dtl__row"><span>耗时</span><b>{{ detail.cost || '—' }}</b></div>
+                  <div class="dtl__row"><span>产物大小</span><b>{{ detail.size || '—' }}</b></div>
+                  <div class="dtl__row"><span>编译节点</span><b>{{ detail.node || '—' }}</b></div>
+                </div>
+                <div class="dtl__logtitle">编译日志片段</div>
+                <div class="terminal terminal--mini">
+                  <div class="term__line term__line--out" v-for="(l, i) in detail.logs" :key="i">{{ l }}</div>
+                </div>
+              </div>
+              <div class="dtl dtl--empty" v-else>点击左侧任务树查看节点详情</div>
+            </div>
+          </div>
+
+          <div class="panel__sub">本次构建产物清单</div>
+          <el-table :data="artifactRows" stripe size="small" style="width:100%">
+            <el-table-column prop="name" label="产物" width="150"></el-table-column>
+            <el-table-column prop="type" label="类型" width="110" align="center"></el-table-column>
+            <el-table-column prop="partition" label="对应分区" width="120" align="center"></el-table-column>
+            <el-table-column prop="size" label="大小" width="110" align="right"></el-table-column>
+            <el-table-column prop="md5" label="校验 MD5" min-width="200"></el-table-column>
+            <el-table-column prop="use" label="用途" min-width="180"></el-table-column>
+            <el-table-column label="状态" width="100" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="'st-' + s.row.state">{{ s.row.state }}</el-tag></template>
+            </el-table-column>
+          </el-table>
+        </section>
+
+        <!-- 视图二：打补丁 -->
+        <section v-show="active==='patch'" class="panel etbl">
+          <div class="panel__head">
+            <h2>打补丁</h2>
+            <span class="panel__tag">Gerrit 命令自动化</span>
+          </div>
+          <p class="panel__cap">
+            将「取代码 → 切分支 → 拉取 Gerrit Change → <b>cherry-pick</b> → 冲突处理 → 编译验证 → 发起 review」
+            固化为可执行流水线；命令与日志<b>全程可视</b>，每一步均可追溯到具体 Change-Id。
+          </p>
+
+          <div class="statstrip">
+            <div class="stat"><div class="stat__v">7</div><div class="stat__k">流水线步骤</div></div>
+            <div class="stat"><div class="stat__v">4.2m</div><div class="stat__k">单补丁平均耗时</div></div>
+            <div class="stat"><div class="stat__v">19/23</div><div class="stat__k">全自动合入</div></div>
+            <div class="stat"><div class="stat__v">1</div><div class="stat__k stat__k--warn">待人工解冲突</div></div>
+          </div>
+
+          <div class="patch">
+            <div class="patch__left">
+              <div class="build__boxhead">
+                流水线步骤
+                <span class="patch__actions">
+                  <button class="tbtn" @click="runAll">▶ 全部执行</button>
+                  <button class="tbtn" @click="step = 0; logs = []">⟲ 重置</button>
+                </span>
+              </div>
+              <ol class="patch__steps">
+                <li
+                  v-for="(s, i) in patchSteps"
+                  :key="s.id"
+                  class="patch__step"
+                  :class="{ 'is-done': step > i, 'is-now': step === i + 1 }"
+                  @click="step = i + 1">
+                  <span class="patch__no">{{ i + 1 }}</span>
+                  <span class="patch__body">
+                    <span class="patch__title">{{ s.title }}</span>
+                    <code class="patch__cmd">{{ s.cmd }}</code>
+                  </span>
+                </li>
+              </ol>
+            </div>
+
+            <div class="patch__right">
+              <div class="build__boxhead">
+                执行窗口
+                <span class="patch__actions">
+                  <span class="patch__meta">分支 hw-13.0.0-release · manifest@manifest_hw13</span>
+                </span>
+              </div>
+              <div class="terminal">
+                <div class="term__line term__line--cmd" v-for="(l, i) in logs" :key="i">{{ l }}</div>
+                <div class="term__line term__line--run" v-if="running">▍ 正在执行步骤 {{ step }} ...</div>
+                <div class="term__line term__line--out" v-if="!logs.length && !running">点击左侧任一步骤，查看该步骤执行到当前的完整命令与日志。</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel__sub">补丁清单</div>
+          <el-table :data="patchRows" stripe size="small" style="width:100%">
+            <el-table-column prop="change" label="Change-Id" width="150"></el-table-column>
+            <el-table-column prop="repo" label="目标仓库" min-width="170"></el-table-column>
+            <el-table-column prop="subject" label="提交标题" min-width="240"></el-table-column>
+            <el-table-column prop="owner" label="提交人" width="100" align="center"></el-table-column>
+            <el-table-column label="级别" width="80" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="'lv-' + s.row.level">{{ s.row.level }}</el-tag></template>
+            </el-table-column>
+            <el-table-column label="状态" width="110" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="'st-' + s.row.state">{{ s.row.state }}</el-tag></template>
+            </el-table-column>
+            <el-table-column prop="review" label="Review" width="110" align="center"></el-table-column>
+          </el-table>
+        </section>
+      </div>
+    </div>
+
+    <footer class="foot">
+      <p>说明：本页为纯前端演示，全部数据为本地模拟，与任何真实业务系统、企业数据无关。命令、Change-Id、分支与产物信息均为示意。</p>
+    </footer>
+  </main>
+
+  <script src="../vendor/vue.min.js"></script>
+  <script src="../vendor/element-ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -85,6 +85,7 @@ a { color: inherit; text-decoration: none; }
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
+.flow-grid--4 { grid-template-columns: repeat(4, 1fr); }
 .step {
   display: flex;
   align-items: center;
@@ -123,6 +124,7 @@ a { color: inherit; text-decoration: none; }
 }
 @media (max-width: 720px) {
   .flow-grid { grid-template-columns: repeat(2, 1fr); }
+  .flow-grid--4 { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 480px) {
   .flow-grid { grid-template-columns: 1fr; }
