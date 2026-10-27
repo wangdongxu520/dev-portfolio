@@ -20,7 +20,7 @@
 
     <!-- 标签页（Element UI） -->
     <main class="content">
-      <el-tabs v-model="active" class="mytabs" @tab-click="onTabClick">
+      <el-tabs v-model="active" class="mytabs">
         <el-tab-pane label="数据运维" name="data">
           <div class="panel">
             <h2 class="panel__title">数据运维</h2>
@@ -105,45 +105,6 @@
             </div>
 
             <a class="demo-link" href="autoops/" target="_blank" rel="noopener">查看演示 ↗</a>
-
-            <h3 class="ops-h">项目背景</h3>
-            <p class="ops-p">实现人员管理、风险监控、评论监控等系统的<strong>可视化与自动化</strong>：把开发人员入场离场、服务管理、建单告警、风险管理等分散动作，统一收敛到一套带数据看板的运维平台中，降低人工核对成本，提升异常响应速度。</p>
-
-            <h3 class="ops-h">技术栈</h3>
-            <div class="ops-tags">
-              <el-tag>Vue</el-tag>
-              <el-tag>ECharts</el-tag>
-              <el-tag>MVT</el-tag>
-              <el-tag>Element UI</el-tag>
-              <el-tag>Oracle</el-tag>
-              <el-tag>PostgreSQL</el-tag>
-            </div>
-
-            <h3 class="ops-h">核心职责</h3>
-            <div class="ops-cards">
-              <div class="ops-card">
-                <div class="ops-card__no">01</div>
-                <h4>Vue 前端开发</h4>
-                <p>开发人员入场离场、服务管理、建单告警、风险管理、数据看板等模块的前端实现，基于 MVT 架构与 Element UI 组件库搭建。</p>
-              </div>
-              <div class="ops-card">
-                <div class="ops-card__no">02</div>
-                <h4>ECharts 可视化</h4>
-                <p>实现报表、流程图、饼图等交互图表，支持点击钻取下钻明细，让运维指标一眼可见、可溯源。</p>
-              </div>
-              <div class="ops-card">
-                <div class="ops-card__no">03</div>
-                <h4>数据库迁移改造</h4>
-                <p>完成 Oracle → PostgreSQL、ES5 → ES7 的代码改造，兼顾存量 SQL 与查询语法，保障系统稳定迁移、平滑过渡。</p>
-              </div>
-            </div>
-
-            <h3 class="ops-h">数据看板（ECharts 演示）</h3>
-            <p class="ops-p ops-p--sm">点击左侧饼图扇区，可下钻查看该模块的近 7 日趋势。</p>
-            <div class="ops-charts">
-              <div class="ops-chart"><div id="opsPie" class="ops-chart__c"></div></div>
-              <div class="ops-chart"><div id="opsBar" class="ops-chart__c"></div></div>
-            </div>
           </div>
         </el-tab-pane>
         <el-tab-pane label="CI 自动化平台" name="ci">
@@ -175,78 +136,10 @@
 
   <script src="vendor/vue.min.js"></script>
   <script src="vendor/element-ui.js"></script>
-  <script src="vendor/echarts.min.js"></script>
-  <script>
-    /* 自动化运维平台 · ECharts 看板演示（点击饼图钻取） */
-    function initAutoOpsChart() {
-      if (!window.echarts) return;
-      try {
-        var accent = "#3b5bdb";
-        var modules = ["人员管理", "风险监控", "评论监控", "服务管理"];
-        var pieData = [
-          { name: "人员管理", value: 35 },
-          { name: "风险监控", value: 25 },
-          { name: "评论监控", value: 20 },
-          { name: "服务管理", value: 20 }
-        ];
-        var drill = {
-          "人员管理": [12, 15, 13, 18, 20, 17, 16],
-          "风险监控": [8, 9, 7, 11, 10, 12, 9],
-          "评论监控": [6, 7, 5, 8, 9, 7, 6],
-          "服务管理": [7, 8, 6, 9, 10, 8, 7]
-        };
-        var days = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
-        var pie = echarts.init(document.getElementById("opsPie"));
-        var bar = echarts.init(document.getElementById("opsBar"));
-
-        pie.setOption({
-          title: { text: "系统模块分布", left: "center", textStyle: { color: "#16181d", fontSize: 14 } },
-          tooltip: { trigger: "item" },
-          legend: { bottom: 0, textStyle: { color: "#5f6470" } },
-          series: [{
-            type: "pie", radius: ["38%", "62%"], center: ["50%", "45%"], data: pieData,
-            label: { color: "#16181d" },
-            color: ["#3b5bdb", "#22b8a6", "#f59f00", "#e8590c"]
-          }]
-        });
-
-        function renderBar(name) {
-          bar.setOption({
-            title: { text: name + " · 近 7 日趋势", left: "center", textStyle: { color: "#16181d", fontSize: 14 } },
-            tooltip: { trigger: "axis" },
-            grid: { left: 44, right: 16, top: 34, bottom: 26 },
-            xAxis: { type: "category", data: days, axisLine: { lineStyle: { color: "#cfd4de" } }, axisLabel: { color: "#5f6470" } },
-            yAxis: { type: "value", axisLine: { lineStyle: { color: "#cfd4de" } }, axisLabel: { color: "#5f6470" }, splitLine: { lineStyle: { color: "#eef0f4" } } },
-            series: [{ type: "bar", data: drill[name], itemStyle: { color: accent, borderRadius: [4, 4, 0, 0] }, barWidth: "46%" }]
-          }, true);
-        }
-
-        renderBar("人员管理");
-        pie.on("click", function (p) { if (p && p.name) renderBar(p.name); });
-        window.__opsPie = pie; window.__opsBar = bar;
-      } catch (e) { console.error("initAutoOpsChart error", e); }
-    }
-    window.initAutoOpsChart = initAutoOpsChart;
-    window.addEventListener("resize", function () {
-      if (window.__opsPie) window.__opsPie.resize();
-      if (window.__opsBar) window.__opsBar.resize();
-    });
-  </script>
   <script>
     new Vue({
       el: "#app",
-      data: { active: "data" },
-      methods: {
-        onTabClick: function (tab) {
-          var self = this;
-          if (tab && tab.name === "autoops") {
-            this.$nextTick(function () {
-              if (window.__opsPie) { window.__opsPie.resize(); window.__opsBar.resize(); }
-              else if (window.initAutoOpsChart) window.initAutoOpsChart();
-            });
-          }
-        }
-      }
+      data: { active: "data" }
     });
   </script>
 </body>
