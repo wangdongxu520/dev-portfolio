@@ -29,6 +29,89 @@
   }
   Array.prototype.forEach.call(document.querySelectorAll(".kpi__value"), animateCount);
 
+  /* ---------- 解析 YAML 文本：拆出缩进、键、值 ---------- */
+  function parseYaml(raw) {
+    var lines = raw.replace(/\r/g, "").split("\n");
+    var out = [];
+    lines.forEach(function (text, i) {
+      var m = /^(\s*)(.*)$/.exec(text);
+      var indent = m[1];
+      var rest = m[2];
+      var item = {
+        no: i + 1,
+        indent: indent,
+        depth: Math.floor(indent.length / 2),
+        key: "",
+        val: null,
+        comment: ""
+      };
+      if (rest.charAt(0) === "#") {
+        item.comment = rest;
+      } else {
+        var ci = rest.indexOf(":");
+        if (ci >= 0) {
+          item.key = rest.slice(0, ci);
+          item.val = rest.slice(ci + 1).replace(/^\s+/, "");
+        } else {
+          item.val = rest;
+        }
+      }
+      out.push(item);
+    });
+    return out;
+  }
+
+  var YAML_SRC = [
+    "# ci/build.yaml —— 编译任务编排配置",
+    "build:",
+    "  target: hw-13.0.0",
+    "  nodes: 32",
+    "  stages:",
+    "    - name: baseline",
+    "      parallel: true",
+    "      jobs:",
+    "        - id: chipset",
+    "          repo: device/huawei/hw13/chipset",
+    "          modules: [soc, radio, camera, modem]",
+    "          outputs: [vendor.img]",
+    "        - id: custom",
+    "          repo: device/huawei/hw13/custom",
+    "          modules: [custom-prebuilt, custom-config]",
+    "          outputs: [product-overlay]",
+    "        - id: bootloader",
+    "          repo: device/huawei/bootloader",
+    "          modules: [lk, kernel]",
+    "          outputs: [fastboot.img]",
+    "        - id: base",
+    "          repo: platform/frameworks/base",
+    "          modules: [framework, art]",
+    "          outputs: [system-base]",
+    "    - name: system",
+    "      parallel: true",
+    "      jobs:",
+    "        - id: system",
+    "          repo: build/soong",
+    "          modules: [system-app, priv-app]",
+    "          outputs: [system.img]",
+    "        - id: product",
+    "          repo: device/huawei/hw13/product",
+    "          modules: [product-overlay]",
+    "          outputs: [product.img]",
+    "        - id: vendor",
+    "          repo: vendor/huawei",
+    "          modules: [prebuilt]",
+    "          outputs: [vendor.img]",
+    "    - name: pack",
+    "      parallel: false",
+    "      jobs:",
+    "        - id: integrate",
+    "          outputs: [super.img]",
+    "        - id: sign",
+    "          outputs: [signed-images]",
+    "        - id: pack",
+    "          outputs: [fastboot.img, sdcard.img]"
+  ].join("\n");
+
   new Vue({
     el: "#app",
     data: {
@@ -37,202 +120,67 @@
       step: 0,
       running: false,
       timer: null,
+      yamlLines: parseYaml(YAML_SRC),
 
-      /* 自动编译：整机编译任务树（串行主线 + 阶段内并行） */
+      /* 自动编译：ci/build.yaml 缩进结构 → el-tree */
       treeData: [
         {
-          id: "root", label: "hw-13.0.0 整机编译", mode: "serial", state: "ok", icon: "el-icon-s-platform",
-          kind: "构建任务", repo: "manifest@manifest_hw13", partition: "全量", cost: "38m12s",
-          size: "—", node: "ci-node-08", concurrency: "18 并发",
-          deps: "串行主线：Stage 1 → Stage 2 → Stage 3 逐级触发",
+          id: "build", label: "build · 编译编排", state: "ok", icon: "el-icon-s-platform",
+          kind: "根配置", repo: "ci/build.yaml", cost: "38m12s", node: "ci-node-08",
+          line: 2, lineEnd: 48,
           logs: [
             "$ ci/build.sh -p hw13 -l hw13-userdebug",
-            "[manifest] 168 repositories detected",
-            "[stage] Stage 1 基线预编译 · 4 组并行 / 18 节点",
-            "[stage] Stage 2 系统构建 · 3 组并行（依赖 Stage 1 产物）",
-            "[stage] Stage 3 集成打包 · 严格串行",
+            "[config] ci/build.yaml loaded, 3 stages / 10 jobs",
+            "[stage] baseline: 4 jobs dispatched in parallel",
+            "[stage] system : 3 jobs dispatched in parallel",
+            "[stage] pack   : 3 jobs executed in sequence",
             "[done] build finished in 38m12s, 0 failed"
           ],
           children: [
             {
-              id: "s1", label: "Stage 1 · 基线预编译", mode: "phase", state: "ok", icon: "el-icon-files",
-              kind: "阶段", repo: "—", partition: "—", cost: "12m26s", size: "—", node: "ci-node-11",
-              concurrency: "4 组并行 · 18 节点",
-              deps: "无（构建起点，可立即开始）",
-              logs: [
-                "$ ci/build.sh --stage baseline",
-                "[parallel] chipset / custom / bootloader / base 同时下发",
-                "[parallel] 4 组全部完成，产物就绪",
-                "[done] stage 1 finished in 12m26s"
-              ],
-              children: [
-                {
-                  id: "chipset", label: "chipset 芯片平台", mode: "parallel", state: "ok", icon: "el-icon-cpu",
-                  kind: "组件组", repo: "device/huawei/hw13/chipset", partition: "vendor", cost: "6m02s",
-                  size: "—", node: "ci-node-11", concurrency: "soc / radio / camera / modem 并行",
-                  deps: "无（与 custom、bootloader、base 互不依赖）",
-                  logs: [
-                    "$ build chipset",
-                    "[parallel] soc ... ok",
-                    "[parallel] radio ... ok",
-                    "[parallel] camera ... ok",
-                    "[parallel] modem ... warning (2 files skipped)"
-                  ],
-                  children: [
-                    { id: "soc", label: "soc · SoC 平台", mode: "parallel", state: "ok", kind: "组件", repo: "device/huawei/hw13/chipset/soc", partition: "vendor", cost: "6m02s", size: "—", node: "ci-node-11", concurrency: "独占 4 节点", deps: "无", logs: ["$ make soc", "GEN soc.dts", "LD soc.so", "done (362s)"] },
-                    { id: "radio", label: "radio · 基带", mode: "parallel", state: "ok", kind: "组件", repo: "device/huawei/hw13/chipset/radio", partition: "modem", cost: "3m25s", size: "—", node: "ci-node-12", concurrency: "独占 3 节点", deps: "无", logs: ["$ make radio", "CP start done", "done (205s)"] },
-                    { id: "camera", label: "camera · 影像 HAL", mode: "parallel", state: "ok", kind: "组件", repo: "device/huawei/hw13/chipset/camera", partition: "vendor", cost: "2m11s", size: "—", node: "ci-node-13", concurrency: "独占 2 节点", deps: "无", logs: ["$ make camera", "SO libcamera_hal.so", "done (131s)"] },
-                    { id: "modem", label: "modem · 调制解调", mode: "parallel", state: "warn", kind: "组件", repo: "device/huawei/hw13/chipset/modem", partition: "modem", cost: "2m48s", size: "—", node: "ci-node-12", concurrency: "独占 2 节点", deps: "无", logs: ["$ make modem", "warning: 2 个 patch 未匹配主线，已跳过", "done (168s)"] }
-                  ]
-                },
-                {
-                  id: "custom", label: "custom 定制预编译", mode: "parallel", state: "ok", icon: "el-icon-s-goods",
-                  kind: "组件组", repo: "device/huawei/hw13/custom", partition: "product", cost: "4m38s",
-                  size: "—", node: "ci-node-14", concurrency: "prebuilt / config 并行",
-                  deps: "无（与 chipset、bootloader、base 互不依赖）",
-                  logs: [
-                    "$ build custom",
-                    "[parallel] custom-prebuilt ... ok",
-                    "[parallel] custom-config ... ok",
-                    "[done] 4m38s"
-                  ],
-                  children: [
-                    { id: "customPrebuilt", label: "custom-prebuilt · 定制预编译包", mode: "parallel", state: "ok", kind: "组件", repo: "device/huawei/hw13/custom/prebuilt", partition: "product", cost: "3m06s", size: "—", node: "ci-node-14", concurrency: "独占 3 节点", deps: "无", logs: ["$ make prebuilt", "copy 64 so / apk", "done (186s)"] },
-                    { id: "customConfig", label: "custom-config · 定制配置", mode: "parallel", state: "ok", kind: "组件", repo: "device/huawei/hw13/custom/config", partition: "product", cost: "1m32s", size: "—", node: "ci-node-15", concurrency: "独占 1 节点", deps: "无", logs: ["$ make custom_config", "gen custom.prop", "done (92s)"] }
-                  ]
-                },
-                {
-                  id: "bootloader", label: "bootloader 引导", mode: "parallel", state: "ok", icon: "el-icon-cpu",
-                  kind: "组件组", repo: "device/huawei/bootloader", partition: "bootloader", cost: "6m04s",
-                  size: "—", node: "ci-node-03", concurrency: "lk / kernel 并行",
-                  deps: "无（与 chipset、custom、base 互不依赖）",
-                  logs: ["$ build bootloaders", "[parallel] lk ... ok", "[parallel] kernel ... ok", "[done] 6m04s"],
-                  children: [
-                    { id: "lk", label: "lk · 引导内核", mode: "parallel", state: "ok", kind: "组件", repo: "device/huawei/bootloader/lk", partition: "bootloader", cost: "1m12s", size: "—", node: "ci-node-03", concurrency: "独占 1 节点", deps: "无", logs: ["$ make lk", "CC oblate/lk_main.o", "LD lk.elf", "done (72s)"] },
-                    { id: "kernel", label: "kernel · 内核", mode: "parallel", state: "ok", kind: "组件", repo: "kernel/huawei", partition: "boot", cost: "4m38s", size: "—", node: "ci-node-05", concurrency: "独占 4 节点", deps: "无", logs: ["$ make hw13_defconfig", "CC drivers/net/wifi ... 412 files", "Image: 48.2 MB", "done (278s)"] }
-                  ]
-                },
-                {
-                  id: "base", label: "base 基础框架", mode: "parallel", state: "ok", icon: "el-icon-s-home",
-                  kind: "组件组", repo: "platform/frameworks/base", partition: "system", cost: "5m30s",
-                  size: "—", node: "ci-node-21", concurrency: "framework / art 并行",
-                  deps: "无（与 chipset、custom、bootloader 互不依赖）",
-                  logs: ["$ build base", "[parallel] framework ... ok", "[parallel] art ... ok", "[done] 5m30s"],
-                  children: [
-                    { id: "framework", label: "framework · 核心框架", mode: "parallel", state: "ok", kind: "组件", repo: "platform/frameworks/base", partition: "system", cost: "5m30s", size: "—", node: "ci-node-21", concurrency: "独占 5 节点", deps: "无", logs: ["$ m framework", "JACK 486 modules", "done (330s)"] },
-                    { id: "art", label: "art · 运行时", mode: "parallel", state: "ok", kind: "组件", repo: "art/libart", partition: "system", cost: "2m08s", size: "—", node: "ci-node-22", concurrency: "独占 2 节点", deps: "无", logs: ["$ m art", "SO libart.so", "done (128s)"] }
-                  ]
-                }
-              ]
-            },
-            {
-              id: "s2", label: "Stage 2 · 系统构建", mode: "phase", state: "ok", icon: "el-icon-files",
-              kind: "阶段", repo: "—", partition: "—", cost: "17m05s", size: "—", node: "ci-node-21",
-              concurrency: "3 组并行 · 12 节点",
-              deps: "依赖 Stage 1 全部产物就绪（chipset / custom / bootloader / base）",
-              logs: [
-                "$ ci/build.sh --stage system",
-                "[wait] 等待 Stage 1 产物校验通过",
-                "[parallel] system / product / vendor 同时下发",
-                "[done] stage 2 finished in 17m05s"
-              ],
-              children: [
-                {
-                  id: "system", label: "system 系统分区", mode: "parallel", state: "ok", icon: "el-icon-folder",
-                  kind: "组件组", repo: "build/soong", partition: "system", cost: "7m12s",
-                  size: "—", node: "ci-node-22", concurrency: "app / priv-app / image 并行",
-                  deps: "依赖 base、chipset（vendor 侧镜像）产物",
-                  logs: ["$ build system", "[parallel] system-app ... ok", "[parallel] priv-app ... ok", "[parallel] system image ... ok"],
-                  children: [
-                    { id: "systemApp", label: "system-app · 预装应用", mode: "parallel", state: "ok", kind: "组件", repo: "apps/SystemApp", partition: "system", cost: "4m10s", size: "—", node: "ci-node-22", concurrency: "独占 4 节点", deps: "无", logs: ["$ m SystemApp", "copy 168 apk", "done (250s)"] },
-                    { id: "privApp", label: "priv-app · 特权应用", mode: "parallel", state: "ok", kind: "组件", repo: "apps/PrivApp", partition: "system", cost: "3m08s", size: "—", node: "ci-node-23", concurrency: "独占 3 节点", deps: "无", logs: ["$ m PrivApp", "copy 42 apk", "done (188s)"] },
-                    { id: "systemImage", label: "system.img", mode: "parallel", state: "ok", icon: "el-icon-document", kind: "产物", repo: "build/make", partition: "system", cost: "生成于 29m18s", size: "2.1 GB", node: "ci-node-08", concurrency: "收尾任务", deps: "依赖 system-app / priv-app 完成", logs: ["$ mkuserimg system ...", "creating system.img ... 100%", "system.img  2.1 GB"] }
-                  ]
-                },
-                {
-                  id: "product", label: "product 产品定制", mode: "parallel", state: "ok", icon: "el-icon-folder",
-                  kind: "组件组", repo: "device/huawei/hw13/product", partition: "product", cost: "4m02s",
-                  size: "—", node: "ci-node-24", concurrency: "overlay / image 并行",
-                  deps: "依赖 custom 定制配置产物",
-                  logs: ["$ build product", "[parallel] product overlay ... ok", "[parallel] product image ... ok"],
-                  children: [
-                    { id: "productOverlay", label: "product-overlay · 定制 overlay", mode: "parallel", state: "ok", kind: "组件", repo: "device/huawei/hw13/product", partition: "product", cost: "1m26s", size: "—", node: "ci-node-24", concurrency: "独占 1 节点", deps: "依赖 custom-config", logs: ["$ m product_config", "overlay 96 files", "done (86s)"] },
-                    { id: "productImage", label: "product.img", mode: "parallel", state: "ok", icon: "el-icon-document", kind: "产物", repo: "device/huawei/hw13/product", partition: "product", cost: "生成于 29m16s", size: "312 MB", node: "ci-node-08", concurrency: "收尾任务", deps: "依赖 product-overlay 完成", logs: ["$ mkuserimg product ...", "product.img  312 MB"] }
-                  ]
-                },
-                {
-                  id: "vendor", label: "vendor 厂商组件", mode: "parallel", state: "ok", icon: "el-icon-folder",
-                  kind: "组件组", repo: "vendor/huawei", partition: "vendor", cost: "4m18s",
-                  size: "—", node: "ci-node-14", concurrency: "prebuilt / image 并行",
-                  deps: "依赖 chipset 编译产物",
-                  logs: ["$ build vendor", "[parallel] prebuilt blobs ... ok", "[parallel] vendor image ... ok"],
-                  children: [
-                    { id: "vendorPrebuilt", label: "vendor-prebuilt · 预编译库", mode: "parallel", state: "ok", kind: "组件", repo: "vendor/huawei/prebuilt", partition: "vendor", cost: "2m36s", size: "—", node: "ci-node-14", concurrency: "独占 3 节点", deps: "依赖 chipset", logs: ["$ make prebuilt", "copy 218 blobs", "done (156s)"] },
-                    { id: "vendorImage", label: "vendor.img", mode: "parallel", state: "ok", icon: "el-icon-document", kind: "产物", repo: "vendor/huawei", partition: "vendor", cost: "生成于 29m14s", size: "860 MB", node: "ci-node-08", concurrency: "收尾任务", deps: "依赖 vendor-prebuilt 完成", logs: ["$ mkuserimg vendor ...", "vendor.img  860 MB"] }
-                  ]
-                }
-              ]
-            },
-            {
-              id: "s3", label: "Stage 3 · 集成打包", mode: "serial", state: "ok", icon: "el-icon-s-tools",
-              kind: "阶段", repo: "build/soong/tools", partition: "全量", cost: "4m31s",
-              size: "—", node: "ci-node-08", concurrency: "严格串行 · 单任务",
-              deps: "依赖 Stage 2 全部产物就绪（system.img / vendor.img / product.img）",
-              logs: [
-                "$ ci/build.sh --stage pack",
-                "[serial] integrate ... ok",
-                "[serial] sign ... ok",
-                "[serial] pack ... ok",
-                "[done] stage 3 finished in 4m31s"
-              ],
-              children: [
-                {
-                  id: "integrate", label: "integrate · 整机集成", mode: "serial", state: "ok", icon: "el-icon-s-operation",
-                  kind: "阶段任务", repo: "build/soong/tools/releasetools", partition: "super", cost: "1m51s",
-                  size: "—", node: "ci-node-08", concurrency: "独占 1 节点",
-                  deps: "依赖 system.img / vendor.img / product.img 就绪",
-                  logs: ["$ mke2fs + lpmake", "super.img  3.4 GB", "done (111s)"]
-                },
-                {
-                  id: "sign", label: "sign · 镜像签名", mode: "serial", state: "ok", icon: "el-icon-s-check",
-                  kind: "阶段任务", repo: "build/soong/tools/sign", partition: "—", cost: "1m04s",
-                  size: "—", node: "ci-node-08", concurrency: "独占 1 节点",
-                  deps: "依赖 integrate 完成",
-                  logs: ["$ sign_target_files", "signing 9 images", "done (64s)"]
-                },
-                {
-                  id: "pack", label: "pack · 整机打包", mode: "serial", state: "ok", icon: "el-icon-s-goods",
-                  kind: "阶段任务", repo: "device/huawei/hw13", partition: "全量刷机", cost: "1m36s",
-                  size: "—", node: "ci-node-08", concurrency: "独占 1 节点",
-                  deps: "依赖 sign 完成",
-                  logs: ["$ ci/pack.sh --sdcard", "creating sdcard.img ... 100%", "sdcard.img  6.8 GB  (md5 3ab77e...)"],
-                  children: [
-                    { id: "fastboot", label: "fastboot.img", mode: "serial", state: "ok", icon: "el-icon-document", kind: "产物", repo: "device/huawei/bootloader", partition: "bootloader", cost: "生成于 38m06s", size: "8.4 MB", node: "ci-node-08", concurrency: "收尾任务", deps: "依赖 sign 完成", logs: ["$ mkbootimg ...", "creating fastboot.img ... 100%", "fastboot.img  8.4 MB  (md5 9f2c1a...)"] },
-                    { id: "sdcard", label: "sdcard.img · 刷机包", mode: "serial", state: "ok", icon: "el-icon-document", kind: "产物", repo: "device/huawei/hw13", partition: "全量刷机", cost: "生成于 38m11s", size: "6.8 GB", node: "ci-node-08", concurrency: "收尾任务", deps: "依赖 sign 完成", logs: ["$ ci/pack.sh --sdcard", "creating sdcard.img ... 100%", "sdcard.img  6.8 GB  (md5 3ab77e...)"] }
-                  ]
-                }
-              ]
+              id: "stages", label: "stages · 阶段列表", state: "ok", icon: "el-icon-files",
+              kind: "配置节点", repo: "ci/build.yaml", cost: "—", node: "—",
+              line: 5, lineEnd: 48,
+              logs: ["stages: baseline / system / pack"],
+              children: []
             }
           ]
         }
       ],
-
-      /* 串并调度视图 */
-      laneRows: [
+      stageData: [
         {
-          stage: "Stage 1 · 基线预编译", type: "parallel",
-          tasks: ["chipset 芯片平台", "custom 定制预编译", "bootloader 引导", "base 基础框架"],
-          note: "4 组互不依赖，同步下发，18 节点并发"
+          id: "st_baseline", label: "baseline · 基线预编译", state: "ok", icon: "el-icon-s-opportunity",
+          kind: "阶段", repo: "ci/build.yaml", cost: "12m26s", node: "18 节点",
+          line: 6, lineEnd: 24,
+          logs: ["- name: baseline", "  parallel: true", "  jobs: chipset / custom / bootloader / base"],
+          children: [
+            { id: "j_chipset", label: "chipset · 芯片平台", state: "ok", icon: "el-icon-cpu", kind: "job", repo: "vendor.img", cost: "6m02s", node: "ci-node-11", line: 9, lineEnd: 12, logs: ["- id: chipset", "  repo: device/huawei/hw13/chipset", "  modules: [soc, radio, camera, modem]", "  outputs: [vendor.img]"] },
+            { id: "j_custom", label: "custom · 定制预编译", state: "ok", icon: "el-icon-s-goods", kind: "job", repo: "product-overlay", cost: "4m38s", node: "ci-node-14", line: 13, lineEnd: 16, logs: ["- id: custom", "  repo: device/huawei/hw13/custom", "  modules: [custom-prebuilt, custom-config]", "  outputs: [product-overlay]"] },
+            { id: "j_bootloader", label: "bootloader · 引导", state: "ok", icon: "el-icon-cpu", kind: "job", repo: "fastboot.img", cost: "6m04s", node: "ci-node-03", line: 17, lineEnd: 20, logs: ["- id: bootloader", "  repo: device/huawei/bootloader", "  modules: [lk, kernel]", "  outputs: [fastboot.img]"] },
+            { id: "j_base", label: "base · 基础框架", state: "ok", icon: "el-icon-s-home", kind: "job", repo: "system-base", cost: "5m30s", node: "ci-node-21", line: 21, lineEnd: 24, logs: ["- id: base", "  repo: platform/frameworks/base", "  modules: [framework, art]", "  outputs: [system-base]"] }
+          ]
         },
         {
-          stage: "Stage 2 · 系统构建", type: "parallel",
-          tasks: ["system 系统分区", "product 产品定制", "vendor 厂商组件"],
-          note: "3 组并行，各自依赖 Stage 1 的不同产物"
+          id: "st_system", label: "system · 系统构建", state: "ok", icon: "el-icon-s-opportunity",
+          kind: "阶段", repo: "ci/build.yaml", cost: "17m05s", node: "12 节点",
+          line: 25, lineEnd: 39,
+          logs: ["- name: system", "  parallel: true", "  jobs: system / product / vendor"],
+          children: [
+            { id: "j_system", label: "system · 系统分区", state: "ok", icon: "el-icon-folder", kind: "job", repo: "system.img", cost: "7m12s", node: "ci-node-22", line: 28, lineEnd: 31, logs: ["- id: system", "  repo: build/soong", "  modules: [system-app, priv-app]", "  outputs: [system.img]"] },
+            { id: "j_product", label: "product · 产品定制", state: "ok", icon: "el-icon-folder", kind: "job", repo: "product.img", cost: "4m02s", node: "ci-node-24", line: 32, lineEnd: 35, logs: ["- id: product", "  repo: device/huawei/hw13/product", "  modules: [product-overlay]", "  outputs: [product.img]"] },
+            { id: "j_vendor", label: "vendor · 厂商组件", state: "ok", icon: "el-icon-folder", kind: "job", repo: "vendor.img", cost: "4m18s", node: "ci-node-14", line: 36, lineEnd: 39, logs: ["- id: vendor", "  repo: vendor/huawei", "  modules: [prebuilt]", "  outputs: [vendor.img]"] }
+          ]
         },
         {
-          stage: "Stage 3 · 集成打包", type: "serial",
-          tasks: ["integrate 集成", "sign 签名", "pack 打包"],
-          note: "严格串行，产出 fastboot.img 与 sdcard.img"
+          id: "st_pack", label: "pack · 集成打包", state: "ok", icon: "el-icon-s-tools",
+          kind: "阶段", repo: "ci/build.yaml", cost: "4m31s", node: "单节点",
+          line: 40, lineEnd: 48,
+          logs: ["- name: pack", "  parallel: false", "  jobs: integrate / sign / pack"],
+          children: [
+            { id: "j_integrate", label: "integrate · 整机集成", state: "ok", icon: "el-icon-s-operation", kind: "job", repo: "super.img", cost: "1m51s", node: "ci-node-08", line: 43, lineEnd: 44, logs: ["- id: integrate", "  outputs: [super.img]"] },
+            { id: "j_sign", label: "sign · 镜像签名", state: "ok", icon: "el-icon-s-check", kind: "job", repo: "signed-images", cost: "1m04s", node: "ci-node-08", line: 45, lineEnd: 46, logs: ["- id: sign", "  outputs: [signed-images]"] },
+            { id: "j_pack", label: "pack · 整机打包", state: "ok", icon: "el-icon-s-goods", kind: "job", repo: "fastboot.img / sdcard.img", cost: "1m36s", node: "ci-node-08", line: 47, lineEnd: 48, logs: ["- id: pack", "  outputs: [fastboot.img, sdcard.img]"] }
+          ]
         }
       ],
 
@@ -303,9 +251,10 @@
           cmd: "./ci/build.sh -p hw13 -l hw13-userdebug",
           logs: [
             "$ ./ci/build.sh -p hw13 -l hw13-userdebug",
-            "[stage 1] 4 组并行 / 18 节点",
-            "[stage 2] 3 组并行，依赖 stage 1 产物",
-            "[stage 3] 串行：integrate → sign → pack",
+            "[config] ci/build.yaml → baseline / system / pack",
+            "[baseline] 4 jobs dispatched in parallel",
+            "[system] 3 jobs dispatched in parallel",
+            "[pack] integrate → sign → pack, executed in sequence",
             "[168/168] all modules built",
             "build finished in 38m12s, 0 failed",
             "artifact: sdcard.img 6.8 GB"
@@ -355,18 +304,38 @@
         return out;
       }
     },
+    created: function () {
+      // stages 下的缩进块挂到 stages 节点，形成与 YAML 缩进层级一致的树
+      this.$set(this.treeData[0].children[0], "children", this.stageData);
+    },
     methods: {
       stateText: function (s) {
         return { ok: "成功", warn: "告警", run: "进行中", fail: "失败" }[s] || s;
       },
-      modeText: function (m) {
-        return { serial: "串行", parallel: "并行", phase: "阶段" }[m] || "";
+      depthColor: function (d) {
+        var palette = [
+          "rgba(59,130,246,0.55)",
+          "rgba(34,211,238,0.5)",
+          "rgba(52,211,153,0.45)",
+          "rgba(251,191,36,0.4)",
+          "rgba(244,114,182,0.38)"
+        ];
+        return palette[Math.min(d, palette.length - 1)];
       },
       onSelect: function (index) {
         this.active = index;
       },
       onNodeClick: function (data) {
         this.detail = data;
+        var self = this;
+        this.$nextTick(function () {
+          var box = self.$refs.yamlBox;
+          if (!box) return;
+          var line = box.querySelector(".yml__line.is-on");
+          if (line && line.scrollIntoView) {
+            line.scrollIntoView({ block: "center" });
+          }
+        });
       },
       runAll: function () {
         var self = this;
