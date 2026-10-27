@@ -14,7 +14,7 @@
       <a class="topbar__back" href="../">← 返回作品集</a>
       <div class="topbar__title">
         <h1>自动化运维平台</h1>
-        <p>纯前端演示版 · 入场离场 / 服务管理 / 建单告警 / 风险管理 / 数据看板 一体化运维平台</p>
+        <p>纯前端演示版 · 入场离场 / 服务管理 / 建单告警 / 风险管理 / 数据看板</p>
       </div>
       <span class="topbar__clock" id="clock">--:--:--</span>
     </div>
@@ -24,24 +24,24 @@
     <!-- KPI -->
     <section class="kpis">
       <div class="kpi">
-        <div class="kpi__label">管理模块</div>
-        <div class="kpi__value" data-count="5">0</div>
-        <div class="kpi__unit">个</div>
-      </div>
-      <div class="kpi">
         <div class="kpi__label">在册人员</div>
-        <div class="kpi__value" data-count="28">0</div>
-        <div class="kpi__unit">人</div>
+        <div class="kpi__value" data-count="1286">0</div>
+        <div class="kpi__unit">人 · 本月入职 68 / 离职 21</div>
       </div>
       <div class="kpi">
-        <div class="kpi__label">在线服务</div>
-        <div class="kpi__value" data-count="16">0</div>
-        <div class="kpi__unit">个</div>
+        <div class="kpi__label">运行中服务</div>
+        <div class="kpi__value" data-count="158">0</div>
+        <div class="kpi__unit">个 · 服务总数 164</div>
       </div>
       <div class="kpi kpi--warn">
         <div class="kpi__label">告警闭环率</div>
-        <div class="kpi__value" data-count="98.6" data-decimals="1">0</div>
-        <div class="kpi__unit">%</div>
+        <div class="kpi__value" data-count="98.2" data-decimals="1">0</div>
+        <div class="kpi__unit">% · 平均闭环 24 分钟</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi__label">全国评论总量</div>
+        <div class="kpi__value" data-count="38642">0</div>
+        <div class="kpi__unit">条 · 待处理 27</div>
       </div>
     </section>
 
@@ -59,61 +59,123 @@
       </aside>
 
       <div class="content">
-        <!-- 视图一：入场离场 -->
+        <!-- 视图一：入场离场（人员入职 / 离职） -->
         <section v-show="active==='entry'" class="panel etbl">
           <div class="panel__head">
             <h2>入场离场</h2>
-            <span class="panel__tag">人员考勤</span>
+            <span class="panel__tag">人员入职 · 离职权限自动化</span>
           </div>
-          <p class="panel__cap">开发人员<strong>入场 / 离场</strong>登记与在场管理，实时掌握团队到岗情况。</p>
+          <p class="panel__cap">
+            对接 <b>HR 花名册</b>，人员入职自动<b>开通</b>域账号 / 堡垒机 / 数据库 / 代码仓库 / VPN 等权限；
+            离职自动<b>回收</b>全部权限并归档操作留痕，全流程无需人工逐项确认。
+          </p>
+          <div class="chain">
+            <span class="chain__i">HR 名单同步</span><span class="chain__sep">→</span>
+            <span class="chain__i">岗位权限模型匹配</span><span class="chain__sep">→</span>
+            <span class="chain__i">工单审批</span><span class="chain__sep">→</span>
+            <span class="chain__i chain__i--on">账号开通</span><span class="chain__sep">→</span>
+            <span class="chain__i">结果核对</span>
+          </div>
+          <div class="statstrip">
+            <div class="stat"><div class="stat__v">12</div><div class="stat__k">今日入职待开通</div></div>
+            <div class="stat"><div class="stat__v">5</div><div class="stat__k">今日离职待回收</div></div>
+            <div class="stat"><div class="stat__v">3</div><div class="stat__k stat__k--warn">回收超时账号</div></div>
+            <div class="stat"><div class="stat__v">100%</div><div class="stat__k">操作留痕率</div></div>
+          </div>
           <el-table :data="entryRows" stripe size="small" style="width:100%">
-            <el-table-column prop="name" label="姓名" width="120"></el-table-column>
-            <el-table-column prop="role" label="角色" width="120"></el-table-column>
-            <el-table-column prop="in" label="入场时间" width="130" align="center"></el-table-column>
-            <el-table-column prop="out" label="离场时间" width="130" align="center"></el-table-column>
-            <el-table-column label="状态" width="110" align="center">
-              <template slot-scope="s"><el-tag size="mini" :type="s.row.online?'success':'info'">{{s.row.online?'在场':'已离场'}}</el-tag></template>
+            <el-table-column prop="id" label="工号" width="100"></el-table-column>
+            <el-table-column prop="name" label="姓名" width="90"></el-table-column>
+            <el-table-column prop="dept" label="部门 · 岗位" min-width="180"></el-table-column>
+            <el-table-column prop="in" label="入职日期" width="110" align="center"></el-table-column>
+            <el-table-column prop="out" label="离职日期" width="110" align="center"></el-table-column>
+            <el-table-column label="权限状态" width="110" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="'st-'+s.row.state">{{s.row.state}}</el-tag></template>
             </el-table-column>
+            <el-table-column prop="action" label="自动化动作" min-width="220"></el-table-column>
           </el-table>
         </section>
 
-        <!-- 视图二：服务管理 -->
+        <!-- 视图二：服务管理（服务启动 / 停止） -->
         <section v-show="active==='service'" class="panel etbl">
           <div class="panel__head">
             <h2>服务管理</h2>
-            <span class="panel__tag">健康度</span>
+            <span class="panel__tag">服务启动 · 停止编排</span>
           </div>
-          <p class="panel__cap">运维<strong>服务</strong>注册、实例数与运行健康度监控，异常服务即时标红。</p>
+          <p class="panel__cap">
+            统一纳管 <b>微服务 / 中间件 / 定时任务</b>，按系统与依赖关系编排<b>启动、停止、重启</b>；
+            停机前校验依赖与审批窗口，操作全程录屏并写入审计日志。
+          </p>
+          <div class="chain">
+            <span class="chain__i">变更申请</span><span class="chain__sep">→</span>
+            <span class="chain__i">依赖拓扑校验</span><span class="chain__sep">→</span>
+            <span class="chain__i">审批 / 窗口校验</span><span class="chain__sep">→</span>
+            <span class="chain__i chain__i--on">启停编排执行</span><span class="chain__sep">→</span>
+            <span class="chain__i">健康探针验收</span>
+          </div>
           <el-table :data="serviceRows" stripe size="small" style="width:100%">
-            <el-table-column prop="svc" label="服务名" width="180"></el-table-column>
-            <el-table-column prop="type" label="类型" width="120"></el-table-column>
-            <el-table-column prop="inst" label="实例数" width="100" align="center"></el-table-column>
-            <el-table-column label="状态" width="110" align="center">
-              <template slot-scope="s"><el-tag size="mini" :type="s.row.status==='运行中'?'success':'danger'">{{s.row.status}}</el-tag></template>
+            <el-table-column prop="svc" label="服务名" width="170"></el-table-column>
+            <el-table-column prop="type" label="类型" width="110" align="center"></el-table-column>
+            <el-table-column prop="sys" label="所属系统" width="110" align="center"></el-table-column>
+            <el-table-column prop="inst" label="实例" width="70" align="center"></el-table-column>
+            <el-table-column label="状态" width="100" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="'st-'+s.row.state">{{s.row.state}}</el-tag></template>
             </el-table-column>
-            <el-table-column label="健康度" align="right">
-              <template slot-scope="s"><span :class="s.row.health>=90?'delta-ok':'delta-warn'">{{s.row.health}}%</span></template>
+            <el-table-column prop="last" label="最近操作" width="150" align="center"></el-table-column>
+            <el-table-column prop="op" label="操作人" width="90" align="center"></el-table-column>
+          </el-table>
+
+          <div class="panel__sub">今日启停操作记录</div>
+          <el-table :data="opRows" stripe size="small" style="width:100%">
+            <el-table-column prop="time" label="时间" width="110" align="center"></el-table-column>
+            <el-table-column prop="act" label="操作" width="80" align="center">
+              <template slot-scope="s"><el-tag size="mini" :type="s.row.act==='启动'?'success':(s.row.act==='停止'?'info':'warning')">{{s.row.act}}</el-tag></template>
             </el-table-column>
+            <el-table-column prop="svc" label="目标服务" min-width="170"></el-table-column>
+            <el-table-column prop="way" label="触发方式" width="120" align="center"></el-table-column>
+            <el-table-column prop="res" label="结果" width="80" align="center">
+              <template slot-scope="s"><span class="delta-ok">{{s.row.res}}</span></template>
+            </el-table-column>
+            <el-table-column prop="cost" label="耗时" width="80" align="center"></el-table-column>
+            <el-table-column prop="op" label="操作人" width="90" align="center"></el-table-column>
           </el-table>
         </section>
 
-        <!-- 视图三：建单告警 -->
+        <!-- 视图三：建单告警（人保电销运维） -->
         <section v-show="active==='ticket'" class="panel etbl">
           <div class="panel__head">
             <h2>建单告警</h2>
-            <span class="panel__tag">闭环跟踪</span>
+            <span class="panel__tag">人保电销运维 · 告警自动建单闭环</span>
           </div>
-          <p class="panel__cap">告警触发后<strong>自动建单</strong>，跟踪工单级别与处理闭环状态。</p>
+          <p class="panel__cap">
+            覆盖 <b>呼叫平台 / 坐席工作台 / 外呼调度 / 录音存储</b> 等电销链路，监控、日志与业务核验告警
+            <b>自动建单</b>，按影响机构与级别派单，跟踪响应、修复与业务验证直至闭环。
+          </p>
+          <div class="chain">
+            <span class="chain__i">监控 / 日志 / 业务核验</span><span class="chain__sep">→</span>
+            <span class="chain__i">告警收敛与去重</span><span class="chain__sep">→</span>
+            <span class="chain__i">自动建单</span><span class="chain__sep">→</span>
+            <span class="chain__i chain__i--on">派单处理</span><span class="chain__sep">→</span>
+            <span class="chain__i">业务验证闭环</span>
+          </div>
+          <div class="statstrip">
+            <div class="stat"><div class="stat__v">37</div><div class="stat__k">今日告警</div></div>
+            <div class="stat"><div class="stat__v">29</div><div class="stat__k">自动建单率</div></div>
+            <div class="stat"><div class="stat__v">8</div><div class="stat__k stat__k--warn">待派单 / 待验证</div></div>
+            <div class="stat"><div class="stat__v">24m</div><div class="stat__k">平均闭环时长</div></div>
+          </div>
           <el-table :data="ticketRows" stripe size="small" style="width:100%">
-            <el-table-column prop="no" label="工单号" width="130"></el-table-column>
-            <el-table-column prop="src" label="来源" width="120"></el-table-column>
-            <el-table-column label="级别" width="100" align="center">
+            <el-table-column prop="no" label="工单号" width="150"></el-table-column>
+            <el-table-column prop="src" label="告警来源" width="100" align="center"></el-table-column>
+            <el-table-column prop="content" label="告警内容" min-width="210"></el-table-column>
+            <el-table-column prop="obj" label="影响机构 / 对象" min-width="160"></el-table-column>
+            <el-table-column label="级别" width="80" align="center">
               <template slot-scope="s"><el-tag size="mini" :class="'lv-'+s.row.level">{{s.row.level}}</el-tag></template>
             </el-table-column>
-            <el-table-column label="状态" width="120" align="center">
-              <template slot-scope="s"><el-tag size="mini" :type="s.row.status==='已闭环'?'success':(s.row.status==='处理中'?'warning':'info')">{{s.row.status}}</el-tag></template>
+            <el-table-column label="状态" width="100" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="'st-'+s.row.state">{{s.row.state}}</el-tag></template>
             </el-table-column>
-            <el-table-column prop="time" label="创建时间" align="center"></el-table-column>
+            <el-table-column prop="time" label="建单时间" width="120" align="center"></el-table-column>
+            <el-table-column prop="cost" label="闭环时长" width="90" align="center"></el-table-column>
           </el-table>
         </section>
 
@@ -121,33 +183,83 @@
         <section v-show="active==='risk'" class="panel etbl">
           <div class="panel__head">
             <h2>风险管理</h2>
-            <span class="panel__tag">定级处置</span>
+            <span class="panel__tag">风险登记 · 定级 · 处置闭环</span>
           </div>
-          <p class="panel__cap">风险项<strong>登记、定级与处置</strong>跟踪，高风险项重点盯防。</p>
+          <p class="panel__cap">
+            围绕自动化运维<b>六类风险</b>建立登记台账：变更、权限、脚本、数据、服务、合规；
+            <b>事前审批拦截、事中留痕监控、事后复盘销项</b>，高风险项重点盯防。
+          </p>
+          <div class="statstrip">
+            <div class="stat"><div class="stat__v stat__v--red">2</div><div class="stat__k">高风险</div></div>
+            <div class="stat"><div class="stat__v stat__v--amber">3</div><div class="stat__k">中风险</div></div>
+            <div class="stat"><div class="stat__v">2</div><div class="stat__k">低风险</div></div>
+            <div class="stat"><div class="stat__v">4</div><div class="stat__k stat__k--warn">在处置中</div></div>
+          </div>
           <el-table :data="riskRows" stripe size="small" style="width:100%">
-            <el-table-column prop="item" label="风险项" min-width="160"></el-table-column>
-            <el-table-column label="等级" width="100" align="center">
+            <el-table-column prop="no" label="风险编号" width="110"></el-table-column>
+            <el-table-column prop="cat" label="风险类别" width="100" align="center"></el-table-column>
+            <el-table-column prop="desc" label="风险描述" min-width="260"></el-table-column>
+            <el-table-column label="等级" width="80" align="center">
               <template slot-scope="s"><el-tag size="mini" :class="'lv-'+s.row.level">{{s.row.level}}</el-tag></template>
             </el-table-column>
-            <el-table-column prop="owner" label="责任人" width="110" align="center"></el-table-column>
-            <el-table-column label="状态" width="120" align="center">
-              <template slot-scope="s"><el-tag size="mini" :type="s.row.status==='已闭环'?'success':(s.row.status==='处置中'?'warning':'info')">{{s.row.status}}</el-tag></template>
+            <el-table-column prop="impact" label="影响面" width="100" align="center"></el-table-column>
+            <el-table-column prop="owner" label="责任人" width="90" align="center"></el-table-column>
+            <el-table-column label="状态" width="100" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="'st-'+s.row.state">{{s.row.state}}</el-tag></template>
             </el-table-column>
-            <el-table-column prop="found" label="发现时间" align="center"></el-table-column>
+            <el-table-column prop="found" label="发现时间" width="115" align="center"></el-table-column>
           </el-table>
         </section>
 
-        <!-- 视图五：数据看板 -->
+        <!-- 视图五：数据看板（全国人保评论数据管理） -->
         <section v-show="active==='dashboard'" class="panel">
           <div class="panel__head">
             <h2>数据看板</h2>
-            <span class="panel__tag">ECharts 演示</span>
+            <span class="panel__tag">全国人保评论数据管理</span>
           </div>
-          <p class="panel__cap">点击左侧<strong>饼图扇区</strong>，可下钻查看该模块的近 7 日趋势。</p>
+          <p class="panel__cap">
+            全国各分支机构评论数据的<b>采集、清洗、分发与响应</b>统一看板：总量与增量、情感倾向、
+            待处理与回复率可视；<b>点击柱状图</b>可下钻查看该机构的评论明细。
+          </p>
+          <el-table :data="orgRows" stripe size="small" style="width:100%">
+            <el-table-column prop="org" label="机构" width="120"></el-table-column>
+            <el-table-column prop="total" label="评论总量" width="100" align="right"></el-table-column>
+            <el-table-column prop="today" label="今日新增" width="100" align="right"></el-table-column>
+            <el-table-column prop="pos" label="正面" width="90" align="right">
+              <template slot-scope="s"><span class="delta-ok">{{s.row.pos}}</span></template>
+            </el-table-column>
+            <el-table-column prop="neu" label="中性" width="90" align="right"></el-table-column>
+            <el-table-column prop="neg" label="负面" width="90" align="right">
+              <template slot-scope="s"><span class="delta-warn">{{s.row.neg}}</span></template>
+            </el-table-column>
+            <el-table-column prop="todo" label="待处理" width="90" align="right"></el-table-column>
+            <el-table-column prop="rate" label="已回复率" width="100" align="right"></el-table-column>
+          </el-table>
+
           <div class="ops-charts">
-            <div class="ops-chart"><div id="opsPie" class="ops-chart__c"></div></div>
-            <div class="ops-chart"><div id="opsBar" class="ops-chart__c"></div></div>
+            <div class="ops-chart ops-chart--main"><div id="orgBar" class="ops-chart__c"></div></div>
+            <div class="ops-chart"><div id="sentPie" class="ops-chart__c"></div></div>
+            <div class="ops-chart ops-chart--full"><div id="trendLine" class="ops-chart__c"></div></div>
           </div>
+
+          <div class="panel__sub">
+            评论明细<template v-if="drillOrg"> · {{drillOrg}}</template>
+            <span class="panel__subhint" v-if="!drillOrg">全部机构 · 点击上方柱状图可按机构下钻</span>
+            <span class="panel__subhint" v-if="drillOrg">已按机构筛选</span>
+          </div>
+          <el-table :data="detailRows" stripe size="small" style="width:100%">
+            <el-table-column prop="org" label="机构" width="110"></el-table-column>
+            <el-table-column prop="ch" label="采集渠道" width="110" align="center"></el-table-column>
+            <el-table-column prop="time" label="采集时间" width="120" align="center"></el-table-column>
+            <el-table-column prop="txt" label="评论内容摘要" min-width="300"></el-table-column>
+            <el-table-column label="情感" width="80" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="'sen-'+s.row.sen">{{s.row.sen}}</el-tag></template>
+            </el-table-column>
+            <el-table-column label="处理状态" width="100" align="center">
+              <template slot-scope="s"><el-tag size="mini" :class="'st-'+s.row.state">{{s.row.state}}</el-tag></template>
+            </el-table-column>
+            <el-table-column prop="owner" label="处理人" width="90" align="center"></el-table-column>
+          </el-table>
         </section>
       </div>
     </div>
