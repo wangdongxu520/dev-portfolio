@@ -260,6 +260,9 @@
       stateText: function (s) {
         return { ok: "成功", warn: "告警", run: "进行中", fail: "失败" }[s] || s;
       },
+      onSelect: function (index) {
+        this.active = index;
+      },
       onNodeClick: function (data) {
         this.detail = data;
       },
