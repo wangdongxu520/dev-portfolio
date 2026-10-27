@@ -8,8 +8,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CI 自动化平台 · 演示</title>
   <meta name="description" content="CI 自动化平台 · 纯前端演示版 —— 自动编译 / 打补丁（Gerrit 自动化）。" />
-  <link rel="stylesheet" href="../vendor/element-ui.css?v=20261027" />
-  <link rel="stylesheet" href="style.css?v=20261027" />
+  <link rel="stylesheet" href="../vendor/element-ui.css?v=20261027b" />
+  <link rel="stylesheet" href="style.css?v=20261027b" />
 </head>
 <body>
   <header class="topbar">
@@ -76,7 +76,7 @@
 
           <div class="build">
             <div class="build__tree">
-              <div class="build__boxhead">编译任务树 · 组件视图</div>
+              <div class="build__boxhead">编译任务树 · 组件与串并关系</div>
               <el-tree
                 :data="treeData"
                 node-key="id"
@@ -89,9 +89,14 @@
                 <span class="ci-tree__node" slot-scope="{ data }">
                   <i :class="data.icon || 'el-icon-folder'"></i>
                   <span class="ci-tree__label">{{ data.label }}</span>
+                  <span class="mode" :class="'m-' + (data.mode || 'parallel')">{{ modeText(data.mode) }}</span>
                   <span class="ci-tree__state" :class="'s-' + data.state">{{ stateText(data.state) }}</span>
                 </span>
               </el-tree>
+              <div class="legend">
+                <span class="legend__i"><i class="mode m-parallel">并行</i> 同阶段内互不依赖，同时编译</span>
+                <span class="legend__i"><i class="mode m-serial">串行</i> 存在依赖，按顺序执行</span>
+              </div>
             </div>
 
             <div class="build__detail">
@@ -99,10 +104,13 @@
               <div class="dtl" v-if="detail">
                 <div class="dtl__name">
                   {{ detail.label }}
+                  <span class="mode" :class="'m-' + (detail.mode || 'parallel')">{{ modeText(detail.mode) }}</span>
                   <span class="ci-tree__state" :class="'s-' + detail.state">{{ stateText(detail.state) }}</span>
                 </div>
                 <div class="dtl__grid">
                   <div class="dtl__row"><span>节点类型</span><b>{{ detail.kind || '组件目录' }}</b></div>
+                  <div class="dtl__row"><span>调度方式</span><b>{{ modeText(detail.mode) }}{{ detail.concurrency ? ' · ' + detail.concurrency : '' }}</b></div>
+                  <div class="dtl__row"><span>依赖上游</span><b>{{ detail.deps || '无（可立即开始）' }}</b></div>
                   <div class="dtl__row"><span>manifest 项目</span><b>{{ detail.repo || '—' }}</b></div>
                   <div class="dtl__row"><span>产物分区</span><b>{{ detail.partition || '—' }}</b></div>
                   <div class="dtl__row"><span>耗时</span><b>{{ detail.cost || '—' }}</b></div>
@@ -116,6 +124,28 @@
               </div>
               <div class="dtl dtl--empty" v-else>点击左侧任务树查看节点详情</div>
             </div>
+          </div>
+
+          <div class="panel__sub">串并调度视图</div>
+          <div class="sched">
+            <template v-for="(r, i) in laneRows">
+              <div class="sched__row" :key="r.stage">
+                <div class="sched__stage">
+                  {{ r.stage }}
+                  <span class="mode" :class="'m-' + r.type">{{ r.type === 'parallel' ? '并行执行' : '串行执行' }}</span>
+                </div>
+                <div class="sched__tasks">
+                  <template v-for="(t, j) in r.tasks">
+                    <span class="sched__task" :key="t">{{ t }}</span>
+                    <span class="sched__op" :key="'op' + j" v-if="j < r.tasks.length - 1">{{ r.type === 'parallel' ? '∥' : '→' }}</span>
+                  </template>
+                </div>
+                <div class="sched__note">{{ r.note }}</div>
+              </div>
+              <div class="sched__arrow" :key="'arrow' + i" v-if="i < laneRows.length - 1">
+                ↓ 串行依赖：上一阶段全部产物就绪后，才触发下一阶段
+              </div>
+            </template>
           </div>
 
           <div class="panel__sub">本次构建产物清单</div>
@@ -213,8 +243,8 @@
     </footer>
   </main>
 
-  <script src="../vendor/vue.min.js?v=20261027"></script>
-  <script src="../vendor/element-ui.js?v=20261027"></script>
-  <script src="app.js?v=20261027"></script>
+  <script src="../vendor/vue.min.js?v=20261027b"></script>
+  <script src="../vendor/element-ui.js?v=20261027b"></script>
+  <script src="app.js?v=20261027b"></script>
 </body>
 </html>
