@@ -76,7 +76,56 @@ a { color: inherit; text-decoration: none; }
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 22px 18px 6px;
+  padding: 22px 18px 18px;
+}
+
+/* 流程步骤网格：每行 3 个，一屏看全 */
+.flow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #eef1fb;
+  border: 1.5px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.4;
+  word-break: break-word;
+}
+.step__no {
+  flex: 0 0 auto;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.step__text { min-width: 0; }
+.step--trigger, .step--end {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.step--trigger .step__no, .step--end .step__no {
+  background: #fff; color: var(--accent);
+}
+.flow-foot {
+  margin: 14px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+@media (max-width: 720px) {
+  .flow-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .flow-grid { grid-template-columns: 1fr; }
 }
 
 .lane { margin-bottom: 22px; }
@@ -111,27 +160,6 @@ a { color: inherit; text-decoration: none; }
   padding-bottom: 1px;
 }
 .lane__link:hover { opacity: 0.75; }
-
-/* 演示跳转 CTA（主线三 → monitor 演示页） */
-.demo-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-  padding: 7px 16px;
-  background: var(--accent);
-  color: #fff;
-  border: 1px solid var(--accent);
-  border-radius: 8px;
-  font-size: 13.5px;
-  font-weight: 600;
-  transition: .2s;
-}
-.demo-link:hover {
-  opacity: .92;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(59, 91, 219, .28);
-}
 
 .lane__track {
   display: flex;
@@ -192,23 +220,6 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
-/* 纵向泳道（自动化运维主线：需求到交付） */
-.lane__track--v {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0;
-}
-.lane__track--v .node {
-  flex: 0 0 auto;
-  text-align: left;
-  justify-content: flex-start;
-  margin: 0;
-}
-.lane__track--v .arrow {
-  align-self: center;
-  transform: rotate(90deg);
-  margin: 2px 0;
-}
 
 /* 页脚 */
 .footer {

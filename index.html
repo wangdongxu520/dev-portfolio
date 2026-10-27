@@ -76,35 +76,24 @@
             <div class="flow">
               <section class="lane">
                 <h3 class="lane__head"><span class="lane__dot"></span>主线 · 需求到交付全流程</h3>
-                <div class="lane__track lane__track--v">
-                  <div class="node node--trigger">1 · 人保用户和需求提需求</div>
-                  <span class="arrow">→</span>
-                  <div class="node">2 · 需求和我们开发进行讨论对接</div>
-                  <span class="arrow">→</span>
-                  <div class="node">3 · 开发完善功能点拆解和代办事项列表文档</div>
-                  <span class="arrow">→</span>
-                  <div class="node">4 · 功能点会议评审与任务排期</div>
-                  <span class="arrow">→</span>
-                  <div class="node">5 · 开发写代码</div>
-                  <span class="arrow">→</span>
-                  <div class="node">6 · 开发 Postman 编码自测</div>
-                  <span class="arrow">→</span>
-                  <div class="node">7 · 前后端开发联调测试</div>
-                  <span class="arrow">→</span>
-                  <div class="node">8 · 部署上线开发测试环境</div>
-                  <span class="arrow">→</span>
-                  <div class="node">9 · 部署上线功能测试环境</div>
-                  <span class="arrow">→</span>
-                  <div class="node">10 · 需求测试功能</div>
-                  <span class="arrow">→</span>
-                  <div class="node">11 · 没问题后上线生产环境</div>
-                  <span class="arrow">→</span>
-                  <div class="node node--end">12 · 交付人保用户</div>
+                <div class="flow-grid">
+                  <div class="step step--trigger"><span class="step__no">1</span><span class="step__text">人保用户和需求提需求</span></div>
+                  <div class="step"><span class="step__no">2</span><span class="step__text">需求和我们开发进行讨论对接</span></div>
+                  <div class="step"><span class="step__no">3</span><span class="step__text">开发完善功能点拆解和代办事项列表文档</span></div>
+                  <div class="step"><span class="step__no">4</span><span class="step__text">功能点会议评审与任务排期</span></div>
+                  <div class="step"><span class="step__no">5</span><span class="step__text">开发写代码</span></div>
+                  <div class="step"><span class="step__no">6</span><span class="step__text">开发 Postman 编码自测</span></div>
+                  <div class="step"><span class="step__no">7</span><span class="step__text">前后端开发联调测试</span></div>
+                  <div class="step"><span class="step__no">8</span><span class="step__text">部署上线开发测试环境</span></div>
+                  <div class="step"><span class="step__no">9</span><span class="step__text">部署上线功能测试环境</span></div>
+                  <div class="step"><span class="step__no">10</span><span class="step__text">需求测试功能</span></div>
+                  <div class="step"><span class="step__no">11</span><span class="step__text">没问题后上线生产环境</span></div>
+                  <div class="step step--end"><span class="step__no">12</span><span class="step__text">交付人保用户</span></div>
                 </div>
               </section>
             </div>
 
-            <a class="demo-link" href="autoops/" target="_blank" rel="noopener">查看演示 ↗</a>
+            <p class="flow-foot">完整模块演示（入场离场 / 服务管理 / 建单告警 / 风险管理 / 数据看板）：<a class="lane__link" href="autoops/" target="_blank" rel="noopener">查看演示 ↗</a></p>
           </div>
         </el-tab-pane>
         <el-tab-pane label="CI 自动化平台" name="ci">
