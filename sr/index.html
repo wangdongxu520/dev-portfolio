@@ -73,7 +73,7 @@
 
   <header class="top">
     <h1>图像超分算法合并框架 · 代码演示</h1>
-    <p class="lead">将 BasicSR、ESRGAN、Real-ESRGAN 三套超分仓库中高度重叠的网络与训练/推理逻辑，统一合并为一套可配置驱动的框架。点击左侧文件树查看源码，点击文件后在右侧查看内容。</p>
+    <p class="lead">下方展示 <b>ESRGAN 原始仓库</b>（<code>sr/ESRGAN</code>）的代码与目录层级 —— 它是超分框架合并的参考源之一。点击左侧文件树浏览目录，点击文件后在右侧查看源码内容。</p>
   </header>
 
   <div class="merge-note">
@@ -106,7 +106,7 @@
 const BINARY_EXT = new Set(['png','jpg','jpeg','gif','bmp','ico','webp','zip','tar','gz','tgz','rar','7z','pth','pt','ckpt','onnx','woff','woff2','ttf','eot','pdf','bin','npz','npy']);
 const KEYWORDS = new Set(['def','class','return','for','if','else','elif','while','import','from','as','with','lambda','None','True','False','raise','try','except','finally','in','not','and','or','is','pass','yield','assert','global','nonlocal','break','continue','async','await','self']);
 
-const DEFAULT_OPEN = new Set(['sr_framework']);
+const DEFAULT_OPEN = new Set(['ESRGAN']);
 let expanded = new Set(DEFAULT_OPEN);
 let manifest = [];
 
@@ -240,9 +240,10 @@ document.getElementById('treeRoot').addEventListener('click',e=>{
     return;
   }
   renderTree();
-  // 默认打开并展示合并框架入口
-  const def=manifest.find(m=>!m.isDir && m.path==='sr_framework/verify.py');
+  // 默认打开并展示 ESRGAN 仓库的代表性源码
+  const def=manifest.find(m=>!m.isDir && m.path==='ESRGAN/RRDBNet_arch.py');
   if(def) openFile(def.path);
+  else if(manifest.length) openFile(manifest.find(m=>!m.isDir).path);
 })();
 </script>
 </body>
