@@ -132,18 +132,38 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 2px 8px rgba(59, 91, 219, 0.25);
 }
 .hub__wire {
-  display: block;
+  position: relative;
   width: 66.67%;
   height: 40px;
   margin: 0 auto;
-  color: var(--accent);
-  opacity: 0.45;
 }
-.hub__wire path {
-  stroke: currentColor;
-  stroke-width: 1.5;
-  fill: none;
-  vector-effect: non-scaling-stroke;
+.hub__wire::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: 0;
+  transform: translateX(-50%);
+  width: 1.5px; height: 20px;
+  background: var(--accent);
+  opacity: 0.4;
+}
+.hub__wire::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 20px;
+  height: 1.5px;
+  background: var(--accent);
+  opacity: 0.4;
+}
+.hub__wire i {
+  position: absolute;
+  top: 20px;
+  width: 1.5px; height: 20px;
+  background: var(--accent);
+  opacity: 0.4;
+}
+.hub__wire i:nth-child(1) { left: 0; transform: translateX(-50%); }
+.hub__wire i:nth-child(2) { left: 50%; transform: translateX(-50%); }
+.hub__wire i:nth-child(3) { left: 100%; transform: translateX(-50%); }
 }
 .hub__dot {
   flex: 0 0 auto;
