@@ -134,23 +134,26 @@ function highlight(code){
 }
 
 function buildTree(items){
-  const root={name:'',isDir:true,children:{},path:''};
+  const root={name:'',children:{},path:''};
   for(const it of items){
     const parts=it.path.split('/');
     let cur=root;
     parts.forEach((p,i)=>{
       const isLast=i===parts.length-1;
-      if(!cur.children[p]) cur.children[p]={name:p,isDir:!isLast,children:{},path:parts.slice(0,i+1).join('/'),size:isLast?it.size:0};
+      if(!cur.children[p]) cur.children[p]={name:p,children:{},path:parts.slice(0,i+1).join('/'),size:isLast?it.size:0};
       cur=cur.children[p];
     });
   }
   return root;
 }
 
+function nodeIsDir(n){ return Object.keys(n.children).length>0; }
+
 function sortNode(n){
   const arr=Object.values(n.children);
   arr.sort((a,b)=>{
-    if(a.isDir!==b.isDir) return a.isDir?-1:1;
+    const da=nodeIsDir(a), db=nodeIsDir(b);
+    if(da!==db) return da?-1:1;
     return a.name.localeCompare(b.name);
   });
   arr.forEach(sortNode);
@@ -162,7 +165,7 @@ function renderNode(n,depth){
   let html='';
   for(const c of n._arr){
     const pad=depth*2;
-    if(c.isDir){
+    if(nodeIsDir(c)){
       const open=expanded.has(c.path);
       html+=`<div class="node" data-toggle="${esc(c.path)}" style="padding-left:${6+pad}px">`
           +`<span class="ico">${open?'▾':'▸'}</span><span class="nm">📁 ${esc(c.name)}</span></div>`;
