@@ -122,7 +122,35 @@
         <el-tab-pane label="图像算法" name="image">
           <div class="panel">
             <h2 class="panel__title">图像算法</h2>
-            <p class="panel__lead">内容待补充</p>
+            <p class="panel__lead">面向超分 / 降噪方向的图像算法工程闭环：从原始数据构建到训练推理调优，形成「数据 → 训练 → 推理 → 对比分析 → 策略迭代」的完整循环。</p>
+
+            <div class="flow">
+              <section class="lane">
+                <h3 class="lane__head"><span class="lane__dot"></span>数据构建故事线</h3>
+                <div class="flow-grid">
+                  <div class="step step--trigger"><span class="step__no">1</span><span class="step__text">图像采集</span></div>
+                  <div class="step"><span class="step__no">2</span><span class="step__text">翻拍</span></div>
+                  <div class="step"><span class="step__no">3</span><span class="step__text">仿真</span></div>
+                  <div class="step"><span class="step__no">4</span><span class="step__text">对齐</span></div>
+                  <div class="step"><span class="step__no">5</span><span class="step__text">裁剪</span></div>
+                  <div class="step step--end"><span class="step__no">6</span><span class="step__text">分类</span></div>
+                </div>
+              </section>
+
+              <section class="lane">
+                <h3 class="lane__head"><span class="lane__dot"></span>训练推理故事线</h3>
+                <div class="flow-grid">
+                  <div class="step step--trigger"><span class="step__no">1</span><span class="step__text">配置数据集、模型、loss</span></div>
+                  <div class="step"><span class="step__no">2</span><span class="step__text">执行 torch 启动脚本</span></div>
+                  <div class="step"><span class="step__no">3</span><span class="step__text">观察 iter 和 epoch</span></div>
+                  <div class="step"><span class="step__no">4</span><span class="step__text">pth 加测试集拿来推理</span></div>
+                  <div class="step"><span class="step__no">5</span><span class="step__text">生成推理图片</span></div>
+                  <div class="step"><span class="step__no">6</span><span class="step__text">推理前后对比</span></div>
+                  <div class="step"><span class="step__no">7</span><span class="step__text">查看问题</span></div>
+                  <div class="step step--end"><span class="step__no">8</span><span class="step__text">根据问题优化下次训练策略</span></div>
+                </div>
+              </section>
+            </div>
           </div>
         </el-tab-pane>
         <el-tab-pane label="AIGC 探索" name="aigc">
