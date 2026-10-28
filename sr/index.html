@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图像超分算法合并框架 · 代码演示</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --bg:#f7f8fa; --surface:#ffffff; --accent:#3b5bdb; --accent-soft:#edf0fe;
+    --text:#1f2937; --muted:#6b7280; --border:#e5e7eb; --code-bg:#0f172a; --code-fg:#e2e8f0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;}
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  /* 免责声明条 */
+  .disclaimer{background:#fff7ed;border-bottom:1px solid #fed7aa;color:#9a3412;
+    padding:10px 18px;font-size:13px;line-height:1.5;text-align:center;}
+  .disclaimer b{color:#c2410c;}
+
+  header.top{padding:20px 24px 8px;max-width:1200px;margin:0 auto;}
+  header.top h1{margin:0 0 6px;font-size:22px;color:var(--accent);}
+  header.top p.lead{margin:0;color:var(--muted);font-size:14px;line-height:1.6;max-width:880px;}
+
+  .merge-note{max-width:1200px;margin:14px auto 0;padding:0 24px;}
+  .merge-note .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    padding:14px 18px;font-size:13px;color:var(--muted);line-height:1.7;}
+  .merge-note .card b{color:var(--text);}
+  .merge-note code{background:var(--accent-soft);color:#2742b0;padding:1px 6px;border-radius:4px;font-size:12px;}
+
+  /* 主体布局 */
+  .layout{max-width:1200px;margin:16px auto 40px;padding:0 24px;display:grid;
+    grid-template-columns:300px 1fr;gap:16px;align-items:start;}
+  @media (max-width:820px){.layout{grid-template-columns:1fr;}}
+
+  .tree{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    max-height:72vh;overflow:auto;padding:10px 6px;font-size:13px;}
+  .tree h3{margin:2px 8px 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .node{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:6px;cursor:pointer;white-space:nowrap;}
+  .node:hover{background:var(--accent-soft);}
+  .node .ico{width:16px;display:inline-block;text-align:center;color:var(--muted);font-size:11px;flex:0 0 auto;}
+  .node .nm{overflow:hidden;text-overflow:ellipsis;}
+  .node .sz{margin-left:auto;color:#9ca3af;font-size:11px;padding-left:8px;}
+  .node.file.active{background:var(--accent);color:#fff;}
+  .node.file.active .ico,.node.file.active .sz{color:#dbe2ff;}
+  .children{margin-left:14px;border-left:1px dashed var(--border);padding-left:4px;}
+
+  /* 代码区 */
+  .viewer{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;min-height:72vh;display:flex;flex-direction:column;}
+  .viewer .bar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);background:#fafbfc;}
+  .viewer .bar .path{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;color:var(--muted);}
+  .viewer .bar .tag{margin-left:auto;font-size:11px;color:#9ca3af;border:1px solid var(--border);border-radius:999px;padding:2px 10px;}
+  .viewer pre{margin:0;padding:16px 18px;overflow:auto;flex:1;background:var(--code-bg);color:var(--code-fg);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.65;tab-size:4;}
+  .viewer pre code{white-space:pre;}
+  .viewer .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:14px;}
+  .c-com{color:#7c8aa0;font-style:italic;}
+  .c-str{color:#9ece6a;}
+  .c-num{color:#ff9e64;}
+  .c-kw{color:#7aa2f7;font-weight:600;}
+  .c-dec{color:#bb9af7;}
+  .c-cls{color:#2dd4bf;}
+  .backlink{max-width:1200px;margin:0 auto 24px;padding:0 24px;font-size:13px;color:var(--muted);}
+</style>
+</head>
+<body>
+  <div class="disclaimer">
+    <b>声明：</b>本页面为<b>代码重构</b>，并非公司内研真实项目；代码<b>不必跑通</b>，仅作为<b>面试演示</b>展示我对超分算法框架（BasicSR / ESRGAN / Real-ESRGAN）的合并与工程化思路。
+  </div>
+
+  <header class="top">
+    <h1>图像超分算法合并框架 · 代码演示</h1>
+    <p class="lead">将 BasicSR、ESRGAN、Real-ESRGAN 三套超分仓库中高度重叠的网络与训练/推理逻辑，统一合并为一套可配置驱动的框架。点击左侧文件树查看源码，点击文件后在右侧查看内容。</p>
+  </header>
+
+  <div class="merge-note">
+    <div class="card">
+      <b>合并范式：</b> <code>YAML 配置驱动</code> + <code>Registry 注册表</code> + <code>BaseArch / BaseModel 继承</code>。
+      训练/推理只写一个入口（<code>train.py</code> / <code>inference.py</code>），不同算法靠 YAML 里 <code>model</code> 与 <code>network_g / network_d</code> 的 <code>type</code> 与参数切换；
+      RRDBNet / SRVGGNetCompact / 判别器 等网络经注册表统一实例化；SR / ESRGAN / RealESRGAN 三类模型以 <code>SRModel → ESRGANModel → RealESRGANModel</code> 继承链复用公共逻辑。
+      三仓库原始代码保留于 <code>BasicSR/</code>、<code>ESRGAN/</code>、<code>Real-ESRGAN/</code> 作为参考，合并后的唯一实现位于 <code>sr_framework/</code>。
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="tree" id="tree">
+      <h3>代码目录</h3>
+      <div id="treeRoot"><div class="empty">加载目录中…</div></div>
+    </aside>
+
+    <section class="viewer">
+      <div class="bar">
+        <span class="path" id="curPath">未选择文件</span>
+        <span class="tag" id="curTag">—</span>
+      </div>
+      <pre id="codePre"><div class="empty">← 从左侧选择一个 <b>.py</b> 文件查看源码</div></pre>
+    </section>
+  </div>
+
+  <div class="backlink">返回主站作品集：<a href="../index.html">王东旭 · 软件工程师作品集</a></div>
+
+<script>
+const BINARY_EXT = new Set(['png','jpg','jpeg','gif','bmp','ico','webp','zip','tar','gz','tgz','rar','7z','pth','pt','ckpt','onnx','woff','woff2','ttf','eot','pdf','bin','npz','npy']);
+const KEYWORDS = new Set(['def','class','return','for','if','else','elif','while','import','from','as','with','lambda','None','True','False','raise','try','except','finally','in','not','and','or','is','pass','yield','assert','global','nonlocal','break','continue','async','await','self']);
+
+const DEFAULT_OPEN = new Set(['sr_framework']);
+let expanded = new Set(DEFAULT_OPEN);
+let manifest = [];
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function highlight(code){
+  const re=/(#[^\n]*)|('''[\s\S]*?'''|"""[\s\S]*?"""|'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")|(\b\d+\.?\d*\b)|(@[A-Za-z_]\w*)|([A-Za-z_]\w*)/g;
+  let out='',last=0,m;
+  while((m=re.exec(code))){
+    out+=esc(code.slice(last,m.index));
+    if(m[1]) out+='<span class="c-com">'+esc(m[1])+'</span>';
+    else if(m[2]) out+='<span class="c-str">'+esc(m[2])+'</span>';
+    else if(m[3]) out+='<span class="c-num">'+esc(m[3])+'</span>';
+    else if(m[4]) out+='<span class="c-dec">'+esc(m[4])+'</span>';
+    else if(m[5]){
+      const w=m[5];
+      if(KEYWORDS.has(w)) out+='<span class="c-kw">'+esc(w)+'</span>';
+      else if(/^[A-Z]/.test(w)) out+='<span class="c-cls">'+esc(w)+'</span>';
+      else out+=esc(w);
+    }
+    last=re.lastIndex;
+  }
+  out+=esc(code.slice(last));
+  return out;
+}
+
+function buildTree(items){
+  const root={name:'',isDir:true,children:{},path:''};
+  for(const it of items){
+    const parts=it.path.split('/');
+    let cur=root;
+    parts.forEach((p,i)=>{
+      const isLast=i===parts.length-1;
+      if(!cur.children[p]) cur.children[p]={name:p,isDir:!isLast,children:{},path:parts.slice(0,i+1).join('/'),size:isLast?it.size:0};
+      cur=cur.children[p];
+    });
+  }
+  return root;
+}
+
+function sortNode(n){
+  const arr=Object.values(n.children);
+  arr.sort((a,b)=>{
+    if(a.isDir!==b.isDir) return a.isDir?-1:1;
+    return a.name.localeCompare(b.name);
+  });
+  arr.forEach(sortNode);
+  n._arr=arr;
+}
+
+function renderNode(n,depth){
+  if(!n._arr) return '';
+  let html='';
+  for(const c of n._arr){
+    const pad=depth*2;
+    if(c.isDir){
+      const open=expanded.has(c.path);
+      html+=`<div class="node" data-toggle="${esc(c.path)}" style="padding-left:${6+pad}px">`
+          +`<span class="ico">${open?'▾':'▸'}</span><span class="nm">📁 ${esc(c.name)}</span></div>`;
+      if(open) html+=`<div class="children">${renderNode(c,depth+1)}</div>`;
+    }else{
+      const ext=(c.name.split('.').pop()||'').toLowerCase();
+      html+=`<div class="node file" data-file="${esc(c.path)}" style="padding-left:${6+pad+16}px">`
+          +`<span class="ico">${ext==='py'?'🐍':'📄'}</span><span class="nm">${esc(c.name)}</span>`
+          +`<span class="sz">${fmtSize(c.size)}</span></div>`;
+    }
+  }
+  return html;
+}
+
+function fmtSize(b){
+  if(!b) return '';
+  if(b<1024) return b+'B';
+  if(b<1024*1024) return (b/1024).toFixed(1)+'K';
+  return (b/1024/1024).toFixed(1)+'M';
+}
+
+function renderTree(){
+  const root=buildTree(manifest);
+  sortNode(root);
+  document.getElementById('treeRoot').innerHTML=renderNode(root,0);
+}
+
+async function openFile(path){
+  document.querySelectorAll('.node.file.active').forEach(e=>e.classList.remove('active'));
+  const el=document.querySelector(`.node.file[data-file="${path}"]`);
+  if(el) el.classList.add('active');
+  const ext=(path.split('.').pop()||'').toLowerCase();
+  document.getElementById('curPath').textContent=path;
+  const pre=document.getElementById('codePre');
+  const tag=document.getElementById('curTag');
+  if(BINARY_EXT.has(ext)){
+    tag.textContent=ext.toUpperCase()+' · 二进制';
+    pre.innerHTML=`<div class="empty">该文件为二进制（${esc(ext)}），无法在页面内预览。<br>可在仓库中直接查看。</div>`;
+    return;
+  }
+  tag.textContent=(ext||'TXT').toUpperCase();
+  pre.innerHTML='<div class="empty">加载中…</div>';
+  try{
+    const resp=await fetch(path,{cache:'no-store'});
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const text=await resp.text();
+    pre.innerHTML='<code>'+highlight(text)+'</code>';
+    pre.scrollTop=0;
+  }catch(e){
+    pre.innerHTML=`<div class="empty">加载失败：${esc(e.message)}<br>（若以 file:// 本地打开，浏览器会禁止 fetch；请通过 GitHub Pages 在线访问）</div>`;
+  }
+}
+
+document.getElementById('treeRoot').addEventListener('click',e=>{
+  const t=e.target.closest('.node');
+  if(!t) return;
+  if(t.dataset.toggle){
+    const p=t.dataset.toggle;
+    if(expanded.has(p)) expanded.delete(p); else expanded.add(p);
+    renderTree();
+  }else if(t.dataset.file){
+    openFile(t.dataset.file);
+  }
+});
+
+(async function init(){
+  try{
+    const resp=await fetch('file_manifest.json',{cache:'no-store'});
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    manifest=await resp.json();
+    // 过滤掉演示页自身与清单文件，树只展示源码
+    manifest=manifest.filter(m=>m.path!=='index.html' && m.path!=='file_manifest.json');
+  }catch(e){
+    document.getElementById('treeRoot').innerHTML=`<div class="empty">目录清单加载失败：${esc(e.message)}</div>`;
+    return;
+  }
+  renderTree();
+  // 默认打开并展示合并框架入口
+  const def=manifest.find(m=>!m.isDir && m.path==='sr_framework/verify.py');
+  if(def) openFile(def.path);
+})();
+</script>
+</body>
+</html>

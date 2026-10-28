@@ -1,0 +1,14 @@
+# 纯 RRDB 超分训练（无 GAN）
+# model 与 network_g 都通过 type 指向注册表里的类，其余键值即构造参数
+model: SRModel
+
+network_g:
+  type: RRDBNet
+  num_in_ch: 3
+  num_out_ch: 3
+  scale: 4
+  num_feat: 64
+  num_block: 23
+  num_grow_ch: 32
+
+scale: 4

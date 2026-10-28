@@ -1,0 +1,13 @@
+# 轻量 SRVGGNetCompact 推理（realesr-general-x4v3 同款结构）
+model: SRModel
+
+network_g:
+  type: SRVGGNetCompact
+  num_in_ch: 3
+  num_out_ch: 3
+  num_feat: 64
+  num_conv: 16
+  upscale: 4
+  act_type: prelu
+
+scale: 4
